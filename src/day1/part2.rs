@@ -8,18 +8,12 @@ pub enum PuzzleError {
 
 #[allow(dead_code)]
 pub fn solve_puzzle() -> Result<i32, PuzzleError> {
-    let calorie_totals = get_calorie_totals().map_err(|error| PuzzleError::ParsingError(error))?;
+    let mut calorie_totals =
+        get_calorie_totals().map_err(|error| PuzzleError::ParsingError(error))?;
 
-    let mut top_three = [0, 0, 0];
+    calorie_totals.sort_by(|total1, total2| total2.cmp(total1));
 
-    for calorie_total in calorie_totals {
-        for top in top_three.iter_mut() {
-            if calorie_total > *top {
-                *top = calorie_total;
-                break;
-            }
-        }
-    }
+    let top_three_sum: i32 = calorie_totals.iter().take(3).sum();
 
-    Ok(top_three.iter().sum())
+    Ok(top_three_sum)
 }
