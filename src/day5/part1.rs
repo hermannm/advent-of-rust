@@ -1,9 +1,6 @@
 use super::shared::{get_top_crates_string, parse_input, CrateArrangement, MoveOperation};
 
-#[allow(dead_code)]
-pub fn solve_puzzle() -> Result<String, String> {
-    let input = include_str!("input.txt");
-
+pub fn solve_puzzle(input: &str) -> Result<String, String> {
     let (mut crate_arrangement, move_operations) = parse_input(input)?;
 
     rearrange_crates(&mut crate_arrangement, &move_operations)?;

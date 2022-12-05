@@ -1,9 +1,6 @@
 use super::shared::{Item, Priority};
 
-#[allow(dead_code)]
-pub fn solve_puzzle() -> Result<i32, String> {
-    let input = include_str!("input.txt");
-
+pub fn solve_puzzle(input: &str) -> Result<i32, String> {
     let lines = input.lines().collect();
     let groups = split_into_groups(lines)?;
 

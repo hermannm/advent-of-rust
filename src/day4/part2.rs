@@ -1,9 +1,6 @@
 use super::shared::Pair;
 
-#[allow(dead_code)]
-pub fn solve_puzzle() -> Result<i32, String> {
-    let input = include_str!("input.txt");
-
+pub fn solve_puzzle(input: &str) -> Result<i32, String> {
     let mut overlapping_pairs = 0;
 
     for line in input.lines() {

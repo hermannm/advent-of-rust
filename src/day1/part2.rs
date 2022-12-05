@@ -1,15 +1,7 @@
 use super::shared::get_calorie_totals;
-use std::num::ParseIntError;
 
-#[derive(Debug)]
-pub enum PuzzleError {
-    ParsingError(ParseIntError),
-}
-
-#[allow(dead_code)]
-pub fn solve_puzzle() -> Result<i32, PuzzleError> {
-    let mut calorie_totals =
-        get_calorie_totals().map_err(|error| PuzzleError::ParsingError(error))?;
+pub fn solve_puzzle(input: &str) -> Result<i32, String> {
+    let mut calorie_totals = get_calorie_totals(input)?;
 
     calorie_totals.sort_by(|total1, total2| total2.cmp(total1));
 
