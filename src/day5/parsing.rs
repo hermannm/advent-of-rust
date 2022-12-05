@@ -2,6 +2,8 @@ use std::collections::HashMap;
 
 use regex::Regex;
 
+use super::arrangement::{CrateArrangement, MoveOperation};
+
 pub fn parse_input(input: &str) -> Result<(CrateArrangement, Vec<MoveOperation>), String> {
     let mut crate_arrangement_lines = Vec::<&str>::new();
     let mut move_operation_lines = Vec::<&str>::new();
@@ -20,53 +22,23 @@ pub fn parse_input(input: &str) -> Result<(CrateArrangement, Vec<MoveOperation>)
         }
     }
 
-    let crate_arrangement = (&mut crate_arrangement_lines).try_into()?;
+    let crate_arrangement = CrateArrangement::try_from(crate_arrangement_lines)?;
     let move_operations = move_operation_lines
-        .into_iter()
-        .map(|line| line.try_into())
+        .iter()
+        .map(|line| MoveOperation::try_from(*line))
         .collect::<Result<Vec<MoveOperation>, String>>()?;
 
     Ok((crate_arrangement, move_operations))
 }
 
-pub struct CrateArrangement {
-    pub stacks: HashMap<i32, Vec<char>>,
-}
-
-impl CrateArrangement {
-    pub fn get_top_crates(&self) -> HashMap<i32, Option<char>> {
-        let mut top_crates = HashMap::<i32, Option<char>>::new();
-
-        for (stack_number, crates) in self.stacks.clone() {
-            top_crates.insert(stack_number, crates.last().copied());
-        }
-
-        top_crates
-    }
-}
-
-pub fn get_top_crates_string(top_crates: HashMap<i32, Option<char>>) -> String {
-    let mut top_crates_vec = top_crates.into_iter().collect::<Vec<(i32, Option<char>)>>();
-
-    top_crates_vec.sort_by_key(|(stack_number, _)| *stack_number);
-
-    top_crates_vec
-        .into_iter()
-        .map(|(_, top_crate)| match top_crate {
-            Some(top_crate) => top_crate,
-            None => ' ',
-        })
-        .collect::<String>()
-}
-
-impl TryFrom<&mut Vec<&str>> for CrateArrangement {
+impl TryFrom<Vec<&str>> for CrateArrangement {
     type Error = String;
 
-    fn try_from(input_lines: &mut Vec<&str>) -> Result<Self, Self::Error> {
+    fn try_from(input_lines: Vec<&str>) -> Result<Self, Self::Error> {
         let mut stacks = HashMap::<i32, Vec<char>>::new();
 
         let stack_number_line = input_lines
-            .pop()
+            .last()
             .ok_or("Empty input passed to crate arrangement")?;
 
         for i in (1..stack_number_line.len() - 1).step_by(4) {
@@ -82,8 +54,9 @@ impl TryFrom<&mut Vec<&str>> for CrateArrangement {
                 .map_err(|_| "Could not convert stack number to 32-bit integer")?;
 
             let stack: Vec<char> = input_lines
-                .into_iter()
+                .iter()
                 .rev()
+                .skip(1)
                 .flat_map(|line| match line.chars().nth(i) {
                     Some(char) => {
                         if char == ' ' {
@@ -101,12 +74,6 @@ impl TryFrom<&mut Vec<&str>> for CrateArrangement {
 
         Ok(Self { stacks })
     }
-}
-
-pub struct MoveOperation {
-    pub crates_to_move: i32,
-    pub from_stack: i32,
-    pub to_stack: i32,
 }
 
 impl TryFrom<&str> for MoveOperation {

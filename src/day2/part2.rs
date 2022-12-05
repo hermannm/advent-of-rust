@@ -1,12 +1,12 @@
-use super::shared::{calculate_score, GameChoice};
+use super::shared::{GameChoice, GameOutcome};
 
 pub fn solve_puzzle(input: &str) -> Result<i32, String> {
     input
         .lines()
         .map(|line| {
             let (enemy_choice, game_outcome) = parse_input_line(line)?;
-            let our_choice = choose_from_outcome(&enemy_choice, &game_outcome);
-            Ok(calculate_score(enemy_choice, our_choice))
+            let our_choice = GameChoice::from_game_outcome(&game_outcome, &enemy_choice);
+            Ok(our_choice.score() + game_outcome.score())
         })
         .sum()
 }
@@ -17,43 +17,54 @@ fn parse_input_line(input_line: &str) -> Result<(GameChoice, GameOutcome), Strin
         return Err("Input line did not contain enough characters".to_string());
     }
 
-    let enemy_choice = game_choice_from_char(input_chars[0])?;
-    let game_outcome = game_outcome_from_char(input_chars[2])?;
+    let enemy_choice = GameChoice::try_from_char(input_chars[0])?;
+    let game_outcome = GameOutcome::try_from(input_chars[2])?;
 
     Ok((enemy_choice, game_outcome))
 }
 
-fn game_choice_from_char(choice_char: char) -> Result<GameChoice, String> {
-    match choice_char {
-        'A' => Ok(GameChoice::Rock),
-        'B' => Ok(GameChoice::Paper),
-        'C' => Ok(GameChoice::Scissors),
-        _ => Err(format!("Invalid game choice character: {choice_char}")),
+impl GameChoice {
+    fn from_game_outcome(game_outcome: &GameOutcome, enemy_choice: &GameChoice) -> GameChoice {
+        use GameChoice::*;
+        use GameOutcome::*;
+
+        match (game_outcome, enemy_choice) {
+            (Draw, Rock) | (Loss, Paper) | (Win, Scissors) => Rock,
+            (Win, Rock) | (Draw, Paper) | (Loss, Scissors) => Paper,
+            (Loss, Rock) | (Win, Paper) | (Draw, Scissors) => Scissors,
+        }
     }
 }
 
-enum GameOutcome {
-    Loss,
-    Draw,
-    Win,
+/// Re-implementation of TryFrom<char> to allow duplicate implementations in part 1 and part 2.
+trait TryFromChar: Sized {
+    type Error;
+
+    fn try_from_char(choice_char: char) -> Result<Self, Self::Error>;
 }
 
-fn game_outcome_from_char(outcome_char: char) -> Result<GameOutcome, String> {
-    match outcome_char {
-        'X' => Ok(GameOutcome::Loss),
-        'Y' => Ok(GameOutcome::Draw),
-        'Z' => Ok(GameOutcome::Win),
-        _ => Err(format!("Invalid game outcome character: {outcome_char}")),
+impl TryFromChar for GameChoice {
+    type Error = String;
+
+    fn try_from_char(choice_char: char) -> Result<Self, Self::Error> {
+        match choice_char {
+            'A' => Ok(GameChoice::Rock),
+            'B' => Ok(GameChoice::Paper),
+            'C' => Ok(GameChoice::Scissors),
+            _ => Err(format!("Invalid game choice character: {choice_char}")),
+        }
     }
 }
 
-fn choose_from_outcome(enemy_choice: &GameChoice, game_outcome: &GameOutcome) -> GameChoice {
-    use GameChoice::*;
-    use GameOutcome::*;
+impl TryFrom<char> for GameOutcome {
+    type Error = String;
 
-    match (enemy_choice, game_outcome) {
-        (Rock, Draw) | (Paper, Loss) | (Scissors, Win) => Rock,
-        (Rock, Win) | (Paper, Draw) | (Scissors, Loss) => Paper,
-        (Rock, Loss) | (Paper, Win) | (Scissors, Draw) => Scissors,
+    fn try_from(outcome_char: char) -> Result<Self, Self::Error> {
+        match outcome_char {
+            'X' => Ok(GameOutcome::Loss),
+            'Y' => Ok(GameOutcome::Draw),
+            'Z' => Ok(GameOutcome::Win),
+            _ => Err(format!("Invalid game outcome character: {outcome_char}")),
+        }
     }
 }

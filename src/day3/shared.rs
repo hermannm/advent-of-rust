@@ -1,3 +1,19 @@
+pub struct Rucksack {
+    pub contents: Vec<Item>,
+}
+
+impl Rucksack {
+    pub fn new(content_string: &str) -> Result<Rucksack, String> {
+        if content_string.len() % 2 != 0 {
+            return Err("Rucksack input string has odd number of characters".to_string());
+        }
+
+        let contents = content_string.chars().collect::<Vec<Item>>();
+
+        Ok(Rucksack { contents })
+    }
+}
+
 pub type Item = char;
 
 pub trait Priority {

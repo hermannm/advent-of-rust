@@ -20,19 +20,8 @@ impl TryFrom<&str> for Pair {
 }
 
 pub struct Range {
-    min: i32,
-    max: i32,
-}
-
-impl Range {
-    pub fn fully_contains(&self, other: &Range) -> bool {
-        self.min <= other.min && self.max >= other.max
-    }
-
-    pub fn overlaps(&self, other: &Range) -> bool {
-        (self.min <= other.max && self.max >= other.min)
-            || (other.min <= self.max && other.max >= self.min)
-    }
+    pub min: i32,
+    pub max: i32,
 }
 
 impl TryFrom<&str> for Range {

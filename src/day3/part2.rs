@@ -1,4 +1,4 @@
-use super::shared::{Item, Priority};
+use super::shared::{Item, Priority, Rucksack};
 
 pub fn solve_puzzle(input: &str) -> Result<i32, String> {
     let lines = input.lines().collect();
@@ -7,7 +7,7 @@ pub fn solve_puzzle(input: &str) -> Result<i32, String> {
     let mut priority_sum = 0;
 
     for group in groups {
-        let badge_item = find_badge_item(group).ok_or("Badge item not found".to_string())?;
+        let badge_item = find_badge_item(&group).ok_or("Badge item not found".to_string())?;
         let priority = badge_item.get_priority()?;
         priority_sum += priority;
     }
@@ -15,8 +15,8 @@ pub fn solve_puzzle(input: &str) -> Result<i32, String> {
     Ok(priority_sum)
 }
 
-fn split_into_groups(input_lines: Vec<&str>) -> Result<Vec<[String; 3]>, String> {
-    let mut groups = Vec::<[String; 3]>::new();
+fn split_into_groups(input_lines: Vec<&str>) -> Result<Vec<[Rucksack; 3]>, String> {
+    let mut groups = Vec::<[Rucksack; 3]>::new();
 
     let input_line_count = input_lines.len();
 
@@ -26,23 +26,19 @@ fn split_into_groups(input_lines: Vec<&str>) -> Result<Vec<[String; 3]>, String>
 
     for line_index in (0..(input_line_count - 1)).step_by(3) {
         groups.push([
-            input_lines[line_index].to_string(),
-            input_lines[line_index + 1].to_string(),
-            input_lines[line_index + 2].to_string(),
+            Rucksack::new(input_lines[line_index])?,
+            Rucksack::new(input_lines[line_index + 1])?,
+            Rucksack::new(input_lines[line_index + 2])?,
         ])
     }
 
     Ok(groups)
 }
 
-fn find_badge_item(group: [String; 3]) -> Option<Item> {
-    for item in group[0].chars() {
-        if group[1].contains(|other_item| item == other_item)
-            && group[2].contains(|other_item| item == other_item)
-        {
-            return Some(item);
-        }
-    }
-
-    None
+fn find_badge_item(group: &[Rucksack; 3]) -> Option<Item> {
+    group[0]
+        .contents
+        .iter()
+        .find(|item| group[1].contents.contains(&item) && group[2].contents.contains(&item))
+        .copied()
 }

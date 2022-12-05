@@ -1,4 +1,4 @@
-use super::shared::Pair;
+use super::shared::{Pair, Range};
 
 pub fn solve_puzzle(input: &str) -> Result<i32, String> {
     let mut fully_contained_pairs = 0;
@@ -12,4 +12,10 @@ pub fn solve_puzzle(input: &str) -> Result<i32, String> {
     }
 
     Ok(fully_contained_pairs)
+}
+
+impl Range {
+    pub fn fully_contains(&self, other: &Range) -> bool {
+        self.min <= other.min && self.max >= other.max
+    }
 }
