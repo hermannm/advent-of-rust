@@ -39,20 +39,26 @@ impl Forest {
         row == 0 || row == self.rows - 1 || col == 0 || col == self.columns - 1
     }
 
-    fn trees_left<'a>(&'a self, row: &'a usize, col: &'a usize) -> impl TreeIterator<'a> {
-        (0..*col).rev().map(|col_left| &self.trees[*row][col_left])
-    }
+    fn treelines_out_from_tree(&self, row: usize, col: usize) -> [Vec<&Tree>; 4] {
+        let trees_left = (0..col)
+            .rev()
+            .map(|col_left| &self.trees[row][col_left])
+            .collect::<Vec<&Tree>>();
 
-    fn trees_right<'a>(&'a self, row: &'a usize, col: &'a usize) -> impl TreeIterator<'a> {
-        ((*col + 1)..self.columns).map(|col_right| &self.trees[*row][col_right])
-    }
+        let trees_right = ((col + 1)..self.columns)
+            .map(|col_right| &self.trees[row][col_right])
+            .collect::<Vec<&Tree>>();
 
-    fn trees_up<'a>(&'a self, row: &'a usize, col: &'a usize) -> impl TreeIterator<'a> {
-        (0..*row).rev().map(|row_up| &self.trees[row_up][*col])
-    }
+        let trees_up = (0..row)
+            .rev()
+            .map(|row_up| &self.trees[row_up][col])
+            .collect::<Vec<&Tree>>();
 
-    fn trees_down<'a>(&'a self, row: &'a usize, col: &'a usize) -> impl TreeIterator<'a> {
-        ((*row + 1)..self.rows).map(|row_down| &self.trees[row_down][*col])
+        let trees_down = ((row + 1)..self.rows)
+            .map(|row_down| &self.trees[row_down][col])
+            .collect::<Vec<&Tree>>();
+
+        [trees_left, trees_right, trees_up, trees_down]
     }
 }
 
@@ -61,35 +67,6 @@ pub struct Tree {
 }
 
 impl Tree {
-    fn calculate_scenic_score(
-        &self,
-        forest: &Forest,
-        row_in_forest: usize,
-        col_in_forest: usize,
-    ) -> Option<usize> {
-        if forest.is_on_edge(row_in_forest, col_in_forest) {
-            return None;
-        }
-
-        let visible_trees_left = forest
-            .trees_left(&row_in_forest, &col_in_forest)
-            .count_trees_visible_from(self);
-
-        let visible_trees_right = forest
-            .trees_right(&row_in_forest, &col_in_forest)
-            .count_trees_visible_from(self);
-
-        let visible_trees_up = forest
-            .trees_up(&row_in_forest, &col_in_forest)
-            .count_trees_visible_from(self);
-
-        let visible_trees_down = forest
-            .trees_down(&row_in_forest, &col_in_forest)
-            .count_trees_visible_from(self);
-
-        Some(visible_trees_left * visible_trees_right * visible_trees_up * visible_trees_down)
-    }
-
     fn is_visible_from_outside(
         &self,
         forest: &Forest,
@@ -100,49 +77,46 @@ impl Tree {
             return true;
         }
 
-        let visible_from_left = forest
-            .trees_left(&row_in_forest, &col_in_forest)
-            .all_shorter_than(self);
-
-        let visible_from_right = forest
-            .trees_right(&row_in_forest, &col_in_forest)
-            .all_shorter_than(self);
-
-        let visible_from_top = forest
-            .trees_up(&row_in_forest, &col_in_forest)
-            .all_shorter_than(self);
-
-        let visible_from_bottom = forest
-            .trees_down(&row_in_forest, &col_in_forest)
-            .all_shorter_than(self);
-
-        visible_from_left || visible_from_right || visible_from_top || visible_from_bottom
-    }
-}
-
-pub trait TreeIterator<'a>: Iterator<Item = &'a Tree> + Clone {
-    fn all_shorter_than(&mut self, tree: &Tree) -> bool;
-
-    fn count_trees_visible_from(self, tree: &Tree) -> usize;
-}
-
-impl<'a, T: Iterator<Item = &'a Tree> + Clone> TreeIterator<'a> for T {
-    fn all_shorter_than(&mut self, tree: &Tree) -> bool {
-        self.all(|other_tree| other_tree.height < tree.height)
-    }
-
-    fn count_trees_visible_from(self, tree: &Tree) -> usize {
-        let mut visible_trees = self
-            .clone()
-            .take_while(|other_tree| other_tree.height < tree.height)
-            .count();
-
-        let total_trees = self.count();
-
-        if visible_trees < total_trees {
-            visible_trees += 1;
+        for treeline in forest.treelines_out_from_tree(row_in_forest, col_in_forest) {
+            if treeline.iter().all(|tree| tree.height < self.height) {
+                return true;
+            }
         }
 
-        visible_trees
+        false
+    }
+
+    fn calculate_scenic_score(
+        &self,
+        forest: &Forest,
+        row_in_forest: usize,
+        col_in_forest: usize,
+    ) -> Option<usize> {
+        if forest.is_on_edge(row_in_forest, col_in_forest) {
+            return None;
+        }
+
+        let mut scenic_score = 1;
+
+        for treeline in forest.treelines_out_from_tree(row_in_forest, col_in_forest) {
+            scenic_score *= self.get_viewing_distance(treeline);
+        }
+
+        Some(scenic_score)
+    }
+
+    fn get_viewing_distance(&self, trees_in_direction: Vec<&Tree>) -> usize {
+        let mut viewing_distance = trees_in_direction
+            .iter()
+            .take_while(|tree| tree.height < self.height)
+            .count();
+
+        let total_trees = trees_in_direction.len();
+
+        if viewing_distance < total_trees {
+            viewing_distance += 1;
+        }
+
+        viewing_distance
     }
 }
