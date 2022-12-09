@@ -32,45 +32,60 @@ impl Rope {
         let mut steps_left = movement.steps;
 
         while steps_left != 0 {
-            let mut previous_knot_old_position: Option<Position> = None;
-            let mut previous_knot_new_position: Option<Position> = None;
+            let mut previous_knot_position: Option<Position> = None;
 
-            for (index, knot) in self.knots.iter_mut().enumerate() {
-                let old_position = knot.position;
+            for knot in self.knots.iter_mut() {
+                let Position { x, y } = knot.position;
 
-                if index == 0 {
-                    let Position { x, y } = knot.position;
+                match previous_knot_position {
+                    None => {
+                        match movement.direction {
+                            Direction::Up => {
+                                knot.move_to(Position { x, y: y + 1 });
+                            }
+                            Direction::Down => {
+                                knot.move_to(Position { x, y: y - 1 });
+                            }
+                            Direction::Left => {
+                                knot.move_to(Position { x: x - 1, y });
+                            }
+                            Direction::Right => {
+                                knot.move_to(Position { x: x + 1, y });
+                            }
+                        };
+                    }
+                    Some(previous_knot_position) => {
+                        if !knot
+                            .position
+                            .is_adjacent_or_overlaps(&previous_knot_position)
+                        {
+                            let Position {
+                                x: prev_x,
+                                y: prev_y,
+                            } = previous_knot_position;
 
-                    match movement.direction {
-                        Direction::Up => {
-                            knot.move_to(Position { x, y: y + 1 });
-                        }
-                        Direction::Down => {
-                            knot.move_to(Position { x, y: y - 1 });
-                        }
-                        Direction::Left => {
-                            knot.move_to(Position { x: x - 1, y });
-                        }
-                        Direction::Right => {
-                            knot.move_to(Position { x: x + 1, y });
-                        }
-                    };
-                } else {
-                    match (previous_knot_old_position, previous_knot_new_position) {
-                        (Some(previous_knot_old_position), Some(previous_knot_new_position)) => {
-                            if !knot
-                                .position
-                                .is_adjacent_or_overlaps(&previous_knot_new_position)
-                            {
-                                knot.move_to(previous_knot_old_position)
+                            if x == prev_x && y < prev_y {
+                                knot.move_to(Position { x, y: y + 1 });
+                            } else if x == prev_x && y > prev_y {
+                                knot.move_to(Position { x, y: y - 1 });
+                            } else if y == prev_y && x < prev_x {
+                                knot.move_to(Position { x: x + 1, y });
+                            } else if y == prev_y && x > prev_x {
+                                knot.move_to(Position { x: x - 1, y });
+                            } else if x < prev_x && y < prev_y {
+                                knot.move_to(Position { x: x + 1, y: y + 1 });
+                            } else if x < prev_x && y > prev_y {
+                                knot.move_to(Position { x: x + 1, y: y - 1 });
+                            } else if x > prev_x && y > prev_y {
+                                knot.move_to(Position { x: x - 1, y: y - 1 });
+                            } else if x > prev_x && y < prev_y {
+                                knot.move_to(Position { x: x - 1, y: y + 1 });
                             }
                         }
-                        _ => {}
                     }
                 }
 
-                previous_knot_old_position = Some(old_position);
-                previous_knot_new_position = Some(knot.position);
+                previous_knot_position = Some(knot.position);
             }
 
             steps_left -= 1;

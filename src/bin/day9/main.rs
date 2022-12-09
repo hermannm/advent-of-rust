@@ -1,7 +1,7 @@
 use advent_of_rust::day9::{part1, part2};
 
 fn main() -> Result<(), String> {
-    let input = include_str!("input_test.txt");
+    let input = include_str!("input.txt");
 
     let part1_solution = part1::solve_puzzle(input)?;
     let part2_solution = part2::solve_puzzle(input)?;
