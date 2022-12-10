@@ -1,4 +1,4 @@
-use std::collections::HashSet;
+use std::{cmp::Ordering, collections::HashSet};
 
 use super::movement::{Direction, Movement};
 
@@ -35,53 +35,12 @@ impl Rope {
             let mut previous_knot_position: Option<Position> = None;
 
             for knot in self.knots.iter_mut() {
-                let Position { x, y } = knot.position;
-
                 match previous_knot_position {
                     None => {
-                        match movement.direction {
-                            Direction::Up => {
-                                knot.move_to(Position { x, y: y + 1 });
-                            }
-                            Direction::Down => {
-                                knot.move_to(Position { x, y: y - 1 });
-                            }
-                            Direction::Left => {
-                                knot.move_to(Position { x: x - 1, y });
-                            }
-                            Direction::Right => {
-                                knot.move_to(Position { x: x + 1, y });
-                            }
-                        };
+                        knot.move_in_direction(&movement.direction);
                     }
                     Some(previous_knot_position) => {
-                        if !knot
-                            .position
-                            .is_adjacent_or_overlaps(&previous_knot_position)
-                        {
-                            let Position {
-                                x: prev_x,
-                                y: prev_y,
-                            } = previous_knot_position;
-
-                            if x == prev_x && y < prev_y {
-                                knot.move_to(Position { x, y: y + 1 });
-                            } else if x == prev_x && y > prev_y {
-                                knot.move_to(Position { x, y: y - 1 });
-                            } else if y == prev_y && x < prev_x {
-                                knot.move_to(Position { x: x + 1, y });
-                            } else if y == prev_y && x > prev_x {
-                                knot.move_to(Position { x: x - 1, y });
-                            } else if x < prev_x && y < prev_y {
-                                knot.move_to(Position { x: x + 1, y: y + 1 });
-                            } else if x < prev_x && y > prev_y {
-                                knot.move_to(Position { x: x + 1, y: y - 1 });
-                            } else if x > prev_x && y > prev_y {
-                                knot.move_to(Position { x: x - 1, y: y - 1 });
-                            } else if x > prev_x && y < prev_y {
-                                knot.move_to(Position { x: x - 1, y: y + 1 });
-                            }
-                        }
+                        knot.follow_previous_knot(&previous_knot_position);
                     }
                 }
 
@@ -90,8 +49,6 @@ impl Rope {
 
             steps_left -= 1;
         }
-
-        dbg!(&self.tail().position);
     }
 }
 
@@ -115,16 +72,58 @@ impl Knot {
         self.position = position;
         self.visited_positions.insert(position);
     }
+
+    fn move_in_direction(&mut self, direction: &Direction) {
+        let Position { x, y } = self.position;
+
+        use Direction::*;
+
+        let new_position = match direction {
+            Up => Position { x, y: y + 1 },
+            Down => Position { x, y: y - 1 },
+            Left => Position { x: x - 1, y },
+            Right => Position { x: x + 1, y },
+        };
+
+        self.move_to(new_position);
+    }
+
+    fn follow_previous_knot(&mut self, previous_knot_position: &Position) {
+        if self.position.is_adjacent(previous_knot_position) {
+            return;
+        }
+
+        let Position { x, y } = self.position;
+
+        use Ordering::*;
+
+        let new_position = match (
+            x.cmp(&previous_knot_position.x),
+            y.cmp(&previous_knot_position.y),
+        ) {
+            (Equal, Less) => Position { x, y: y + 1 },
+            (Equal, Greater) => Position { x, y: y - 1 },
+            (Less, Equal) => Position { x: x + 1, y },
+            (Greater, Equal) => Position { x: x - 1, y },
+            (Less, Less) => Position { x: x + 1, y: y + 1 },
+            (Less, Greater) => Position { x: x + 1, y: y - 1 },
+            (Greater, Greater) => Position { x: x - 1, y: y - 1 },
+            (Greater, Less) => Position { x: x - 1, y: y + 1 },
+            (Equal, Equal) => return,
+        };
+
+        self.move_to(new_position);
+    }
 }
 
-#[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub struct Position {
     x: i32,
     y: i32,
 }
 
 impl Position {
-    pub fn is_adjacent_or_overlaps(&self, other: &Position) -> bool {
+    pub fn is_adjacent(&self, other: &Position) -> bool {
         (self.x - other.x).abs() <= 1 && (self.y - other.y).abs() <= 1
     }
 }
