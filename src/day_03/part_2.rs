@@ -1,4 +1,4 @@
-use super::shared::{Item, Priority, Rucksack};
+use super::rucksack::{Item, Priority, Rucksack};
 
 pub fn solve_puzzle(input: &str) -> Result<i32, String> {
     let lines = input.lines().collect();
@@ -26,9 +26,9 @@ fn split_into_groups(input_lines: Vec<&str>) -> Result<Vec<[Rucksack; 3]>, Strin
 
     for line_index in (0..(input_line_count - 1)).step_by(3) {
         groups.push([
-            Rucksack::new(input_lines[line_index])?,
-            Rucksack::new(input_lines[line_index + 1])?,
-            Rucksack::new(input_lines[line_index + 2])?,
+            Rucksack::try_from(input_lines[line_index])?,
+            Rucksack::try_from(input_lines[line_index + 1])?,
+            Rucksack::try_from(input_lines[line_index + 2])?,
         ])
     }
 

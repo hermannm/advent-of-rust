@@ -1,7 +1,7 @@
-use super::shared::get_calorie_totals;
+use super::parsing::parse_calorie_totals;
 
 pub fn solve_puzzle(input: &str) -> Result<i32, String> {
-    let mut calorie_totals = get_calorie_totals(input)?;
+    let mut calorie_totals = parse_calorie_totals(input)?;
 
     calorie_totals.sort_by(|total_1, total_2| total_2.cmp(total_1));
 

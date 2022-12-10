@@ -1,4 +1,4 @@
-pub fn get_calorie_totals(input: &str) -> Result<Vec<i32>, String> {
+pub fn parse_calorie_totals(input: &str) -> Result<Vec<i32>, String> {
     let mut calorie_totals = Vec::<i32>::new();
 
     for line in input.lines() {

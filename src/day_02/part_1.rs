@@ -1,4 +1,4 @@
-use super::shared::{GameChoice, GameOutcome};
+use super::rock_paper_scissors::{GameChoice, GameOutcome};
 
 pub fn solve_puzzle(input: &str) -> Result<i32, String> {
     input
@@ -21,19 +21,6 @@ fn parse_input_line(input_line: &str) -> Result<(GameChoice, GameChoice), String
     let our_choice = GameChoice::try_from_char(input_chars[2])?;
 
     Ok((enemy_choice, our_choice))
-}
-
-impl GameOutcome {
-    pub fn from_game_choices(enemy_choice: &GameChoice, our_choice: &GameChoice) -> GameOutcome {
-        use GameChoice::*;
-        use GameOutcome::*;
-
-        match (enemy_choice, our_choice) {
-            (Rock, Scissors) | (Paper, Rock) | (Scissors, Paper) => Loss,
-            (Rock, Rock) | (Paper, Paper) | (Scissors, Scissors) => Draw,
-            (Rock, Paper) | (Paper, Scissors) | (Scissors, Rock) => Win,
-        }
-    }
 }
 
 /// Re-implementation of TryFrom<char> to allow duplicate implementations in part 1 and part 2.

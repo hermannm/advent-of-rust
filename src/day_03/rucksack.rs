@@ -3,14 +3,39 @@ pub struct Rucksack {
 }
 
 impl Rucksack {
-    pub fn new(content_string: &str) -> Result<Rucksack, String> {
+    pub fn compartment_contents(&self) -> [Vec<Item>; 2] {
+        let (compartment_1, compartment_2) = self.contents.split_at(self.contents.len() / 2);
+
+        [
+            Vec::<Item>::from(compartment_1),
+            Vec::<Item>::from(compartment_2),
+        ]
+    }
+
+    pub fn find_shared_item_in_compartments(&self) -> Result<Item, String> {
+        let [compartment_1, compartment_2] = self.compartment_contents();
+
+        for item in compartment_1 {
+            if compartment_2.contains(&item) {
+                return Ok(item);
+            }
+        }
+
+        Err("No shared item type found between the two compartments".to_string())
+    }
+}
+
+impl TryFrom<&str> for Rucksack {
+    type Error = String;
+
+    fn try_from(content_string: &str) -> Result<Self, Self::Error> {
         if content_string.len() % 2 != 0 {
             return Err("Rucksack input string has odd number of characters".to_string());
         }
 
         let contents = content_string.chars().collect::<Vec<Item>>();
 
-        Ok(Rucksack { contents })
+        Ok(Self { contents })
     }
 }
 
