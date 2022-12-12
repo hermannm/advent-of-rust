@@ -45,22 +45,22 @@ impl Monkey {
     fn get_id_from_line(line: &str) -> Result<i32, String> {
         let (_, rest_of_line) = line
             .split_once("Monkey ")
-            .ok_or_else(|| "Monkey ID input line did not contain 'Monkey '".to_string())?;
+            .ok_or_else(|| String::from("Monkey ID input line did not contain 'Monkey '"))?;
 
         let (id_string, _) = rest_of_line
             .split_once(':')
-            .ok_or_else(|| "Monkey ID input line did not contain ':'".to_string())?;
+            .ok_or_else(|| String::from("Monkey ID input line did not contain ':'"))?;
 
         id_string
             .parse::<i32>()
-            .map_err(|_| "Failed to parse monkey ID string to integer".to_string())
+            .map_err(|_| String::from("Failed to parse monkey ID string to integer"))
     }
 }
 
 impl Item {
     fn starting_items_from_line(line: &str) -> Result<Vec<Item>, String> {
         let (_, items_string) = line.split_once("Starting items: ").ok_or_else(|| {
-            "Starting items input line did not contain 'Starting items: '".to_string()
+            String::from("Starting items input line did not contain 'Starting items: '")
         })?;
 
         items_string
@@ -88,7 +88,7 @@ impl TryFrom<&str> for WorryLevelOperation {
     fn try_from(operation_string: &str) -> Result<Self, Self::Error> {
         if let Some((_, addend_string)) = operation_string.split_once(" + ") {
             let addend = addend_string.parse::<u64>().map_err(|_| {
-                "Failed to parse addend in worry level operation to integer".to_string()
+                String::from("Failed to parse addend in worry level operation to integer")
             })?;
 
             Ok(WorryLevelOperation::Add(addend))
@@ -97,8 +97,9 @@ impl TryFrom<&str> for WorryLevelOperation {
                 Ok(WorryLevelOperation::MultiplyWithSelf)
             } else {
                 let factor = factor_string.parse::<u64>().map_err(|_| {
-                    "Failed to parse multiplication factor in worry level operation to integer"
-                        .to_string()
+                    String::from(
+                        "Failed to parse multiplication factor in worry level operation to integer",
+                    )
                 })?;
 
                 Ok(WorryLevelOperation::MultiplyWith(factor))
@@ -117,10 +118,9 @@ impl TryFrom<[&str; 3]> for WorryLevelTest {
             let line = input_lines[0];
 
             if !line.contains("divisible by") {
-                return Err(
-                    "Expected first input line for worry level test to contain 'divisible by'"
-                        .to_string(),
-                );
+                return Err(String::from(
+                    "Expected first input line for worry level test to contain 'divisible by'",
+                ));
             }
 
             get_last_integer_in_line::<u64>(line)?
@@ -140,9 +140,9 @@ impl TryFrom<[&str; 3]> for WorryLevelTest {
 impl WorryLevelTest {
     fn get_target_monkey_from_line(line: &str) -> Result<i32, String> {
         if !line.contains("throw to monkey") {
-            return Err(
-                "Expected input line for target monkey to contain 'throw to monkey'".to_string(),
-            );
+            return Err(String::from(
+                "Expected input line for target monkey to contain 'throw to monkey'",
+            ));
         }
 
         get_last_integer_in_line::<i32>(line)
@@ -153,9 +153,9 @@ fn get_last_integer_in_line<T: FromStr>(line: &str) -> Result<T, String> {
     let last_integer_string = line
         .split(' ')
         .last()
-        .ok_or_else(|| "Cannot get integer from empty line".to_string())?;
+        .ok_or_else(|| String::from("Cannot get integer from empty line"))?;
 
     last_integer_string
         .parse::<T>()
-        .map_err(|_| "Failed to parse last part of line to integer".to_string())
+        .map_err(|_| String::from("Failed to parse last part of line to integer"))
 }

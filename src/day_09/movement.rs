@@ -9,13 +9,13 @@ impl TryFrom<&str> for Movement {
     fn try_from(input_line: &str) -> Result<Self, Self::Error> {
         let (direction_str, steps_str) = input_line
             .split_once(' ')
-            .ok_or_else(|| "Input line did not contain space".to_string())?;
+            .ok_or_else(|| String::from("Input line did not contain space"))?;
 
         let direction = Direction::try_from(direction_str)?;
 
         let steps = steps_str
             .parse::<u32>()
-            .map_err(|_| "Failed to parse second part of input line as digit".to_string())?;
+            .map_err(|_| String::from("Failed to parse second part of input line as digit"))?;
 
         Ok(Self { direction, steps })
     }

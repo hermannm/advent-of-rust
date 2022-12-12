@@ -12,7 +12,7 @@ pub fn parse_calorie_totals(input: &str) -> Result<Vec<i32>, String> {
                 let last_index = calorie_totals.len() - 1;
                 calorie_totals[last_index] += input_calories;
             }
-            Err(_) => return Err("Failed to parse line input to integer".to_string()),
+            Err(_) => return Err(String::from("Failed to parse line input to integer")),
         }
     }
 

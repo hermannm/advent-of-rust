@@ -9,7 +9,7 @@ pub struct Rope {
 impl Rope {
     pub fn new(number_of_knots: u32) -> Result<Self, String> {
         if number_of_knots < 2 {
-            return Err("Rope must contain at least 2 knots".to_string());
+            return Err(String::from("Rope must contain at least 2 knots"));
         }
 
         let starting_position = Position { x: 0, y: 0 };

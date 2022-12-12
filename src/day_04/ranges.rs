@@ -19,15 +19,17 @@ impl TryFrom<&str> for Range {
     fn try_from(input_string: &str) -> Result<Self, Self::Error> {
         let range_strings: Vec<&str> = input_string.split('-').collect();
         if range_strings.len() != 2 {
-            return Err("Pair range did not contain 2 parts separated by '-'".to_string());
+            return Err(String::from(
+                "Pair range did not contain 2 parts separated by '-'",
+            ));
         }
 
         let min = range_strings[0]
             .parse::<i32>()
-            .map_err(|_| "Failed to parse first range number".to_string())?;
+            .map_err(|_| String::from("Failed to parse first range number"))?;
         let max = range_strings[1]
             .parse::<i32>()
-            .map_err(|_| "Failed to parse second range number".to_string())?;
+            .map_err(|_| String::from("Failed to parse second range number"))?;
 
         Ok(Self { min, max })
     }
@@ -44,7 +46,7 @@ impl TryFrom<&str> for RangePair {
     fn try_from(input_string: &str) -> Result<Self, Self::Error> {
         let pair_strings: Vec<&str> = input_string.split(',').collect();
         if pair_strings.len() != 2 {
-            return Err("Input line did not contain 2 pairs".to_string());
+            return Err(String::from("Input line did not contain 2 pairs"));
         }
 
         let range_1 = Range::try_from(pair_strings[0])?;

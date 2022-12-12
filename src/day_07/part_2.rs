@@ -12,7 +12,7 @@ pub fn solve_puzzle(input: &str) -> Result<u64, String> {
 
     let available_disk_space = TOTAL_DISK_SPACE - directory_sizes.root_size;
     if available_disk_space > SPACE_NEEDED_FOR_UPDATE {
-        return Err("No space needed to be freed".to_string());
+        return Err(String::from("No space needed to be freed"));
     }
 
     let space_to_free = SPACE_NEEDED_FOR_UPDATE - available_disk_space;
@@ -22,7 +22,9 @@ pub fn solve_puzzle(input: &str) -> Result<u64, String> {
         .filter(|&&size| size >= space_to_free)
         .copied()
         .min()
-        .ok_or_else(|| "Found no directories big enough to free up space for update".to_string())?;
+        .ok_or_else(|| {
+            String::from("Found no directories big enough to free up space for update")
+        })?;
 
     Ok(size_of_directory_to_delete)
 }

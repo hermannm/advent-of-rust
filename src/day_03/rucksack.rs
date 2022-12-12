@@ -21,7 +21,9 @@ impl Rucksack {
             }
         }
 
-        Err("No shared item type found between the two compartments".to_string())
+        Err(String::from(
+            "No shared item type found between the two compartments",
+        ))
     }
 }
 
@@ -30,7 +32,9 @@ impl TryFrom<&str> for Rucksack {
 
     fn try_from(content_string: &str) -> Result<Self, Self::Error> {
         if content_string.len() % 2 != 0 {
-            return Err("Rucksack input string has odd number of characters".to_string());
+            return Err(String::from(
+                "Rucksack input string has odd number of characters",
+            ));
         }
 
         let contents = content_string.chars().collect::<Vec<Item>>();
@@ -50,10 +54,10 @@ impl Priority for Item {
         let priority = ITEM_TYPES
             .iter()
             .position(|item| item == self)
-            .ok_or_else(|| "Invalid item type".to_string())?;
+            .ok_or_else(|| String::from("Invalid item type"))?;
 
         i32::try_from(priority + 1)
-            .map_err(|_| "Could not convert priority to 32-bit integer".to_string())
+            .map_err(|_| String::from("Could not convert priority to 32-bit integer"))
     }
 }
 

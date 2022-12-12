@@ -13,7 +13,7 @@ pub struct Directory {
 impl Directory {
     pub fn new(name: &str) -> Self {
         Self {
-            name: name.to_string(),
+            name: String::from(name),
             children: Vec::<FileSystemNode>::new(),
         }
     }

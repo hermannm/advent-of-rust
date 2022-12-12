@@ -8,7 +8,7 @@ pub fn solve_puzzle(input: &str) -> Result<i32, String> {
 
     for group in groups {
         let badge_item =
-            find_badge_item(&group).ok_or_else(|| "Badge item not found".to_string())?;
+            find_badge_item(&group).ok_or_else(|| String::from("Badge item not found"))?;
         let priority = badge_item.get_priority()?;
         priority_sum += priority;
     }
@@ -22,7 +22,7 @@ fn split_into_groups(input_lines: Vec<&str>) -> Result<Vec<[Rucksack; 3]>, Strin
     let input_line_count = input_lines.len();
 
     if input_line_count % 3 != 0 {
-        return Err("Input lines not divisible into groups of 3".to_string());
+        return Err(String::from("Input lines not divisible into groups of 3"));
     }
 
     for line_index in (0..(input_line_count - 1)).step_by(3) {

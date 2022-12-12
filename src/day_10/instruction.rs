@@ -26,7 +26,7 @@ impl TryFrom<&str> for Instruction {
 
                 let value = value_string
                     .parse::<i64>()
-                    .map_err(|_| "Failed to parse addx value to integer".to_string())?;
+                    .map_err(|_| String::from("Failed to parse addx value to integer"))?;
 
                 Ok(Instruction::Addx(value))
             }

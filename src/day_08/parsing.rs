@@ -16,16 +16,18 @@ impl TryFrom<&str> for Forest {
                 .collect::<Result<Vec<Tree>, String>>()?;
 
             if treeline.len() != columns {
-                return Err("Treeline did match number of treelines in the forest".to_string());
+                return Err(String::from(
+                    "Treeline did match number of treelines in the forest",
+                ));
             }
 
             trees.push(treeline);
         }
 
         if trees.len() != rows {
-            return Err(
-                "Number of treelines in the forest did not match expected value".to_string(),
-            );
+            return Err(String::from(
+                "Number of treelines in the forest did not match expected value",
+            ));
         }
 
         Ok(Self {
@@ -42,7 +44,7 @@ impl TryFrom<char> for Tree {
     fn try_from(height_char: char) -> Result<Self, Self::Error> {
         let height = height_char
             .to_digit(10)
-            .ok_or_else(|| "Failed to parse input height character to integer".to_string())?;
+            .ok_or_else(|| String::from("Failed to parse input height character to integer"))?;
 
         Ok(Self { height })
     }

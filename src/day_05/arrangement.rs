@@ -30,7 +30,7 @@ impl CrateArrangement {
 
                 let crates_to_move =
                     usize::try_from(move_operation.crates_to_move).map_err(|_| {
-                        "Could not convert crates to move in move operation to usize".to_string()
+                        String::from("Could not convert crates to move in move operation to usize")
                     })?;
 
                 let mut moved_crates = stack.split_off(stack.len() - crates_to_move);

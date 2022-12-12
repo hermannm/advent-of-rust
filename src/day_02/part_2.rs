@@ -14,7 +14,7 @@ pub fn solve_puzzle(input: &str) -> Result<i32, String> {
 fn parse_input_line(input_line: &str) -> Result<(GameChoice, GameOutcome), String> {
     let input_chars: Vec<char> = input_line.chars().collect();
     if input_chars.len() < 3 {
-        return Err("Input line did not contain enough characters".to_string());
+        return Err(String::from("Input line did not contain enough characters"));
     }
 
     let enemy_choice = GameChoice::try_from_char(input_chars[0])?;

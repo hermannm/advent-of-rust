@@ -39,19 +39,19 @@ impl TryFrom<Vec<&str>> for CrateArrangement {
 
         let stack_number_line = input_lines
             .last()
-            .ok_or_else(|| "Empty input passed to crate arrangement".to_string())?;
+            .ok_or_else(|| String::from("Empty input passed to crate arrangement"))?;
 
         for i in (1..stack_number_line.len() - 1).step_by(4) {
             let stack_number: i32 = stack_number_line
                 .chars()
                 .nth(i)
-                .ok_or_else(|| "Stack number line too short".to_string())?
+                .ok_or_else(|| String::from("Stack number line too short"))?
                 .to_digit(10)
                 .ok_or_else(|| {
                     format!("Failed to parse stack number from input line: {stack_number_line}")
                 })?
                 .try_into()
-                .map_err(|_| "Could not convert stack number to 32-bit integer".to_string())?;
+                .map_err(|_| String::from("Could not convert stack number to 32-bit integer"))?;
 
             let stack: Vec<char> = input_lines
                 .iter()
@@ -80,8 +80,8 @@ impl TryFrom<&str> for MoveOperation {
     type Error = String;
 
     fn try_from(input_line: &str) -> Result<Self, Self::Error> {
-        let re =
-            Regex::new(r"move | from | to ").map_err(|_| "Failed to compile regex".to_string())?;
+        let re = Regex::new(r"move | from | to ")
+            .map_err(|_| String::from("Failed to compile regex"))?;
 
         let numbers = re
             .split(input_line)
@@ -89,12 +89,14 @@ impl TryFrom<&str> for MoveOperation {
             .map(|number_string| {
                 number_string
                     .parse::<i32>()
-                    .map_err(|_| "Failed to parse number in move operation line".to_string())
+                    .map_err(|_| String::from("Failed to parse number in move operation line"))
             })
             .collect::<Result<Vec<i32>, String>>()?;
 
         if numbers.len() < 3 {
-            return Err("Did not find enough numbers in move operation line".to_string());
+            return Err(String::from(
+                "Did not find enough numbers in move operation line",
+            ));
         }
 
         Ok(Self {
