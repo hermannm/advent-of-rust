@@ -87,9 +87,9 @@ impl TryFrom<&str> for WorryLevelOperation {
 
     fn try_from(operation_string: &str) -> Result<Self, Self::Error> {
         if let Some((_, addend_string)) = operation_string.split_once(" + ") {
-            let addend = addend_string
-                .parse::<u64>()
-                .map_err(|_| "Failed to parse addend in worry level operation to integer")?;
+            let addend = addend_string.parse::<u64>().map_err(|_| {
+                "Failed to parse addend in worry level operation to integer".to_string()
+            })?;
 
             Ok(WorryLevelOperation::Add(addend))
         } else if let Some((_, factor_string)) = operation_string.split_once(" * ") {
@@ -98,6 +98,7 @@ impl TryFrom<&str> for WorryLevelOperation {
             } else {
                 let factor = factor_string.parse::<u64>().map_err(|_| {
                     "Failed to parse multiplication factor in worry level operation to integer"
+                        .to_string()
                 })?;
 
                 Ok(WorryLevelOperation::MultiplyWith(factor))

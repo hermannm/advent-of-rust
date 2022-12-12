@@ -39,19 +39,19 @@ impl TryFrom<Vec<&str>> for CrateArrangement {
 
         let stack_number_line = input_lines
             .last()
-            .ok_or("Empty input passed to crate arrangement")?;
+            .ok_or("Empty input passed to crate arrangement".to_string())?;
 
         for i in (1..stack_number_line.len() - 1).step_by(4) {
             let stack_number: i32 = stack_number_line
                 .chars()
                 .nth(i)
-                .ok_or("Stack number line too short")?
+                .ok_or("Stack number line too short".to_string())?
                 .to_digit(10)
                 .ok_or(format!(
                     "Failed to parse stack number from input line: {stack_number_line}"
                 ))?
                 .try_into()
-                .map_err(|_| "Could not convert stack number to 32-bit integer")?;
+                .map_err(|_| "Could not convert stack number to 32-bit integer".to_string())?;
 
             let stack: Vec<char> = input_lines
                 .iter()

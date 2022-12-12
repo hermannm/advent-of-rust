@@ -34,7 +34,7 @@ impl Directory {
             })
             .find(|directory| directory.name == path_first)
             .ok_or(format!(
-                r#"Directory "{}" had no sub-directory "{}""#,
+                "Directory '{}' had no sub-directory '{}'",
                 self.name, path_first
             ))?
             .traverse(&path)
