@@ -32,7 +32,7 @@ impl SpriteRenderer {
                 .pixels
                 .iter_mut()
                 .last()
-                .ok_or("No pixel rows found in sprite renderer".to_string())?;
+                .ok_or_else(|| "No pixel rows found in sprite renderer".to_string())?;
 
             let current_pixel_position = i64::try_from(pixel_row.len()).map_err(|_| {
                 "Failed to parse current pixel position to 64-bit integer".to_string()

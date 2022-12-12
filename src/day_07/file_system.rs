@@ -19,7 +19,7 @@ impl Directory {
     }
 
     pub fn traverse(&mut self, path: &Path) -> Result<&mut Directory, String> {
-        if path.len() == 0 {
+        if path.is_empty() {
             return Ok(self);
         }
 
@@ -33,10 +33,12 @@ impl Directory {
                 _ => None,
             })
             .find(|directory| directory.name == path_first)
-            .ok_or(format!(
-                "Directory '{}' had no sub-directory '{}'",
-                self.name, path_first
-            ))?
+            .ok_or_else(|| {
+                format!(
+                    "Directory '{}' had no sub-directory '{}'",
+                    self.name, path_first
+                )
+            })?
             .traverse(&path)
     }
 }

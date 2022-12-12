@@ -11,7 +11,7 @@ impl<'a> InputLine<'a> {
     pub fn parse_lines(input: &'a str) -> Result<Vec<Self>, String> {
         input
             .lines()
-            .map(|line| InputLine::try_from(line))
+            .map(InputLine::try_from)
             .collect::<Result<Vec<InputLine>, String>>()
     }
 }
@@ -22,7 +22,7 @@ impl<'a> TryFrom<&'a str> for InputLine<'a> {
     fn try_from(input_line: &'a str) -> Result<Self, Self::Error> {
         let (prefix, rest_of_line) = input_line
             .split_once(' ')
-            .ok_or("Unable to parse input line without space".to_string())?;
+            .ok_or_else(|| "Unable to parse input line without space".to_string())?;
 
         match prefix {
             "$" => {
@@ -30,9 +30,9 @@ impl<'a> TryFrom<&'a str> for InputLine<'a> {
                     return Ok(InputLine::ListCommand);
                 }
 
-                let (command, target_str) = rest_of_line.split_once(' ').ok_or(
-                    "Change directory command did not contain at least 1 space".to_string(),
-                )?;
+                let (command, target_str) = rest_of_line.split_once(' ').ok_or_else(|| {
+                    "Change directory command did not contain at least 1 space".to_string()
+                })?;
 
                 if command != "cd" {
                     return Err(format!("Unknown command found: {command}"));
@@ -85,9 +85,9 @@ impl<'a> TryFrom<Vec<InputLine<'a>>> for Directory {
                 InputLine::ChangeDirectoryCommand(target) => match target {
                     ChangeDirectoryTarget::Root => current_path.clear(),
                     ChangeDirectoryTarget::Parent => {
-                        current_path.pop().ok_or(
-                            "Attempted to navigate to parent from root directory".to_string(),
-                        )?;
+                        current_path.pop().ok_or_else(|| {
+                            "Attempted to navigate to parent from root directory".to_string()
+                        })?;
                     }
                     ChangeDirectoryTarget::Target(directory_name) => {
                         current_path.push(directory_name.to_string());

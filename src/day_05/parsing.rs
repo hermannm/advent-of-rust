@@ -10,7 +10,7 @@ pub fn parse_input(input: &str) -> Result<(CrateArrangement, Vec<MoveOperation>)
 
     let mut is_crate_arrangement_line = true;
     for line in input.lines() {
-        if line == "" {
+        if line.is_empty() {
             is_crate_arrangement_line = false;
             continue;
         }
@@ -39,17 +39,17 @@ impl TryFrom<Vec<&str>> for CrateArrangement {
 
         let stack_number_line = input_lines
             .last()
-            .ok_or("Empty input passed to crate arrangement".to_string())?;
+            .ok_or_else(|| "Empty input passed to crate arrangement".to_string())?;
 
         for i in (1..stack_number_line.len() - 1).step_by(4) {
             let stack_number: i32 = stack_number_line
                 .chars()
                 .nth(i)
-                .ok_or("Stack number line too short".to_string())?
+                .ok_or_else(|| "Stack number line too short".to_string())?
                 .to_digit(10)
-                .ok_or(format!(
-                    "Failed to parse stack number from input line: {stack_number_line}"
-                ))?
+                .ok_or_else(|| {
+                    format!("Failed to parse stack number from input line: {stack_number_line}")
+                })?
                 .try_into()
                 .map_err(|_| "Could not convert stack number to 32-bit integer".to_string())?;
 

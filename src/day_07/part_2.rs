@@ -20,9 +20,9 @@ pub fn solve_puzzle(input: &str) -> Result<u64, String> {
     let size_of_directory_to_delete = directory_sizes
         .into_iter()
         .filter(|&&size| size >= space_to_free)
-        .map(|size| *size)
+        .copied()
         .min()
-        .ok_or("Found no directories big enough to free up space for update".to_string())?;
+        .ok_or_else(|| "Found no directories big enough to free up space for update".to_string())?;
 
     Ok(size_of_directory_to_delete)
 }

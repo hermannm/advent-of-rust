@@ -45,11 +45,11 @@ impl Monkey {
     fn get_id_from_line(line: &str) -> Result<i32, String> {
         let (_, rest_of_line) = line
             .split_once("Monkey ")
-            .ok_or("Monkey ID input line did not contain 'Monkey '".to_string())?;
+            .ok_or_else(|| "Monkey ID input line did not contain 'Monkey '".to_string())?;
 
         let (id_string, _) = rest_of_line
             .split_once(':')
-            .ok_or("Monkey ID input line did not contain ':'".to_string())?;
+            .ok_or_else(|| "Monkey ID input line did not contain ':'".to_string())?;
 
         id_string
             .parse::<i32>()
@@ -59,13 +59,13 @@ impl Monkey {
 
 impl Item {
     fn starting_items_from_line(line: &str) -> Result<Vec<Item>, String> {
-        let (_, items_string) = line
-            .split_once("Starting items: ")
-            .ok_or("Starting items input line did not contain 'Starting items: '".to_string())?;
+        let (_, items_string) = line.split_once("Starting items: ").ok_or_else(|| {
+            "Starting items input line did not contain 'Starting items: '".to_string()
+        })?;
 
         items_string
             .split(", ")
-            .map(|item_string| Item::try_from(item_string))
+            .map(Item::try_from)
             .collect::<Result<Vec<Item>, String>>()
     }
 }
@@ -153,7 +153,7 @@ fn get_last_integer_in_line<T: FromStr>(line: &str) -> Result<T, String> {
     let last_integer_string = line
         .split(' ')
         .last()
-        .ok_or("Cannot get integer from empty line".to_string())?;
+        .ok_or_else(|| "Cannot get integer from empty line".to_string())?;
 
     last_integer_string
         .parse::<T>()

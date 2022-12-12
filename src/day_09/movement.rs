@@ -9,7 +9,7 @@ impl TryFrom<&str> for Movement {
     fn try_from(input_line: &str) -> Result<Self, Self::Error> {
         let (direction_str, steps_str) = input_line
             .split_once(' ')
-            .ok_or("Input line did not contain space".to_string())?;
+            .ok_or_else(|| "Input line did not contain space".to_string())?;
 
         let direction = Direction::try_from(direction_str)?;
 

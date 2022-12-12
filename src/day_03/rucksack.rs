@@ -50,7 +50,7 @@ impl Priority for Item {
         let priority = ITEM_TYPES
             .iter()
             .position(|item| item == self)
-            .ok_or("Invalid item type".to_string())?;
+            .ok_or_else(|| "Invalid item type".to_string())?;
 
         i32::try_from(priority + 1)
             .map_err(|_| "Could not convert priority to 32-bit integer".to_string())

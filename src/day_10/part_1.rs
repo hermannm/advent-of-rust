@@ -3,7 +3,7 @@ use super::{instruction::Instruction, register::Register};
 pub fn solve_puzzle(input: &str) -> Result<i64, String> {
     let mut instructions = input
         .lines()
-        .map(|line| Instruction::try_from(line))
+        .map(Instruction::try_from)
         .collect::<Result<Vec<Instruction>, String>>()?;
 
     let mut register = Register::new(1);

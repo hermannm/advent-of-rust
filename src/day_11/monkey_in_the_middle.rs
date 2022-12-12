@@ -38,7 +38,7 @@ pub fn play_monkey_in_the_middle(
                 let monkey = monkeys
                     .iter_mut()
                     .find(|monkey| monkey.id == *monkey_id)
-                    .ok_or(format!("Monkey with ID '{monkey_id}' not found"))?;
+                    .ok_or_else(|| format!("Monkey with ID '{monkey_id}' not found"))?;
 
                 monkey.items.append(items);
             }
@@ -81,16 +81,14 @@ impl Monkey {
 
     fn throw_item(&self, item: Item, thrown_items: &mut HashMap<i32, Vec<Item>>) {
         let target_monkey = {
-            if &item.worry_level % &self.test.divisible_by == 0 {
+            if item.worry_level % self.test.divisible_by == 0 {
                 self.test.target_monkey_if_true
             } else {
                 self.test.target_monkey_if_false
             }
         };
 
-        let target_monkey_items = thrown_items
-            .entry(target_monkey)
-            .or_insert(Vec::<Item>::new());
+        let target_monkey_items = thrown_items.entry(target_monkey).or_default();
 
         target_monkey_items.push(item);
     }

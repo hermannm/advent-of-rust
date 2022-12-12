@@ -2,7 +2,7 @@ pub fn parse_calorie_totals(input: &str) -> Result<Vec<i32>, String> {
     let mut calorie_totals = Vec::<i32>::new();
 
     for line in input.lines() {
-        if line == "" || calorie_totals.is_empty() {
+        if line.is_empty() || calorie_totals.is_empty() {
             calorie_totals.push(0);
             continue;
         }

@@ -10,7 +10,7 @@ pub fn solve_puzzle(input: &str) -> Result<u64, String> {
     let size_sum = directory_sizes
         .into_iter()
         .filter(|&&size| size <= 100_000u64)
-        .map(|size| *size)
+        .copied()
         .sum();
 
     Ok(size_sum)

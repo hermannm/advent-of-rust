@@ -9,8 +9,7 @@ impl Range {
     }
 
     pub fn overlaps(&self, other: &Range) -> bool {
-        (self.min <= other.max && self.max >= other.min)
-            || (other.min <= self.max && other.max >= self.min)
+        self.min <= other.max && self.max >= other.min
     }
 }
 

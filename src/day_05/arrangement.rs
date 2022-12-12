@@ -21,10 +21,12 @@ impl CrateArrangement {
                 let stack = self
                     .stacks
                     .get_mut(&move_operation.from_stack)
-                    .ok_or(format!(
-                        "No crate stack found with number {}",
-                        move_operation.from_stack
-                    ))?;
+                    .ok_or_else(|| {
+                        format!(
+                            "No crate stack found with number {}",
+                            move_operation.from_stack
+                        )
+                    })?;
 
                 let crates_to_move =
                     usize::try_from(move_operation.crates_to_move).map_err(|_| {
@@ -41,10 +43,12 @@ impl CrateArrangement {
 
             self.stacks
                 .get_mut(&move_operation.to_stack)
-                .ok_or(format!(
-                    "No crate stack found with number {}",
-                    move_operation.to_stack
-                ))?
+                .ok_or_else(|| {
+                    format!(
+                        "No crate stack found with number {}",
+                        move_operation.to_stack
+                    )
+                })?
                 .append(&mut moved_crates);
         }
 

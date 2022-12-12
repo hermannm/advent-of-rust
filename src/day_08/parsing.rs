@@ -12,7 +12,7 @@ impl TryFrom<&str> for Forest {
         for line in input.lines() {
             let treeline = line
                 .chars()
-                .map(|height_char| Tree::try_from(height_char))
+                .map(Tree::try_from)
                 .collect::<Result<Vec<Tree>, String>>()?;
 
             if treeline.len() != columns {
@@ -42,7 +42,7 @@ impl TryFrom<char> for Tree {
     fn try_from(height_char: char) -> Result<Self, Self::Error> {
         let height = height_char
             .to_digit(10)
-            .ok_or("Failed to parse input height character to integer".to_string())?;
+            .ok_or_else(|| "Failed to parse input height character to integer".to_string())?;
 
         Ok(Self { height })
     }

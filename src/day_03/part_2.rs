@@ -7,7 +7,8 @@ pub fn solve_puzzle(input: &str) -> Result<i32, String> {
     let mut priority_sum = 0;
 
     for group in groups {
-        let badge_item = find_badge_item(&group).ok_or("Badge item not found".to_string())?;
+        let badge_item =
+            find_badge_item(&group).ok_or_else(|| "Badge item not found".to_string())?;
         let priority = badge_item.get_priority()?;
         priority_sum += priority;
     }
@@ -39,6 +40,6 @@ fn find_badge_item(group: &[Rucksack; 3]) -> Option<Item> {
     group[0]
         .contents
         .iter()
-        .find(|item| group[1].contents.contains(&item) && group[2].contents.contains(&item))
+        .find(|item| group[1].contents.contains(item) && group[2].contents.contains(item))
         .copied()
 }

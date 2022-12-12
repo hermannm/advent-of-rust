@@ -16,7 +16,7 @@ impl Rope {
         let mut knots = Vec::<Knot>::new();
 
         for _ in 0..number_of_knots {
-            knots.push(Knot::new(starting_position.clone()));
+            knots.push(Knot::new(starting_position));
         }
 
         Ok(Self { knots })
