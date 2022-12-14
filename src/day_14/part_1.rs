@@ -1,7 +1,9 @@
 use super::cave::Cave;
 
-pub fn solve_puzzle(input: &str) -> Result<i32, String> {
-    let cave = Cave::try_from(input)?;
+pub fn solve_puzzle(input: &str) -> Result<usize, String> {
+    let mut cave = Cave::try_from(input)?;
 
-    Ok(cave.lowest_rock)
+    cave.fill_with_sand();
+
+    Ok(cave.sand.len())
 }
