@@ -34,10 +34,8 @@ impl TryFrom<&str> for Valve {
     fn try_from(line_starting_with_flow_rate: &str) -> Result<Self, Self::Error> {
         let (flow_rate_string, tunnels_string) = line_starting_with_flow_rate
             .split_once("; ")
-            .ok_or_else(|| { 
-                format!(
-                    "Expected to find 'tunnels lead to ' in input line '{line_starting_with_flow_rate}'"
-                )
+            .ok_or_else(|| {
+                format!("Expected to find ';' in input line '{line_starting_with_flow_rate}'")
             })?;
 
         let flow_rate = flow_rate_string.parse::<u32>().map_err(|_| {
@@ -45,20 +43,27 @@ impl TryFrom<&str> for Valve {
         })?;
 
         let connected_valves = {
-            if let Some((_, connected_valves_string)) = tunnels_string.split_once("tunnels lead to valves ") {
+            if let Some((_, connected_valves_string)) =
+                tunnels_string.split_once("tunnels lead to valves ")
+            {
                 connected_valves_string
                     .split(", ")
                     .map(String::from)
                     .collect::<Vec<String>>()
-            } else if let Some((_, connected_valve_string)) = tunnels_string.split_once("tunnel leads to valve ") {
+            } else if let Some((_, connected_valve_string)) =
+                tunnels_string.split_once("tunnel leads to valve ")
+            {
                 vec![String::from(connected_valve_string)]
             } else {
                 return Err(format!(
-                    "Failed to parse connected valves from input string '{tunnels_string}"
+                    "Failed to parse connected valves from input string '{tunnels_string}'"
                 ));
             }
         };
 
-        Ok(Valve { flow_rate, connected_valves })
+        Ok(Valve {
+            flow_rate,
+            connected_valves,
+        })
     }
 }
