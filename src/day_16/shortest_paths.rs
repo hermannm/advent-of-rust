@@ -8,7 +8,7 @@ use petgraph::{
 
 use super::valves::ValveMap;
 
-#[derive(PartialEq, Eq, Debug)]
+#[derive(PartialEq, Eq)]
 enum ValveGraphNode {
     Valve(String),
     Connector(String),
@@ -17,8 +17,9 @@ enum ValveGraphNode {
 impl ValveMap {
     pub fn shortest_paths_between_valves(
         &self,
+        starting_valve_id: &str,
     ) -> Result<HashMap<String, HashMap<String, u32>>, String> {
-        let graph = self.to_graph()?;
+        let graph = self.to_graph(starting_valve_id)?;
 
         let result = floyd_warshall(&graph, |edge| *edge.weight()).map_err(|_| {
             String::from("Failed to run Floyd-Warshall algorithm: Negative cycle detected")
@@ -31,38 +32,51 @@ impl ValveMap {
 
             use ValveGraphNode::*;
 
-            if let (Valve(valve_1), Valve(valve_2)) = nodes {
+            if let (Valve(valve_1_id), Valve(valve_2_id)) = nodes {
+                if valve_1_id == valve_2_id {
+                    continue;
+                }
+
                 let valve_1_paths = shortest_paths
-                    .entry(valve_1.clone())
+                    .entry(valve_1_id.clone())
                     .or_insert_with(HashMap::<String, u32>::new);
 
-                valve_1_paths.insert(valve_2.clone(), shortest_path_length);
+                valve_1_paths.insert(valve_2_id.clone(), shortest_path_length);
 
                 let valve_2_paths = shortest_paths
-                    .entry(valve_2.clone())
+                    .entry(valve_2_id.clone())
                     .or_insert_with(HashMap::<String, u32>::new);
 
-                valve_2_paths.insert(valve_1.clone(), shortest_path_length);
+                valve_2_paths.insert(valve_1_id.clone(), shortest_path_length);
             }
         }
 
         Ok(shortest_paths)
     }
 
-    fn to_graph(&self) -> Result<Graph<ValveGraphNode, u32, Directed>, String> {
+    fn to_graph(
+        &self,
+        starting_valve_id: &str,
+    ) -> Result<Graph<ValveGraphNode, u32, Directed>, String> {
         use ValveGraphNode::*;
 
         struct ValveIndices {
-            valve_index: NodeIndex,
+            valve_index: Option<NodeIndex>,
             connector_index: NodeIndex,
         }
 
         let mut valve_indices = HashMap::<String, ValveIndices>::new();
         let mut graph = Graph::new();
 
-        for valve_id in self.0.keys() {
-            let valve_index = graph.add_node(Valve(valve_id.clone()));
+        for (valve_id, valve) in &self.0 {
             let connector_index = graph.add_node(Connector(valve_id.clone()));
+
+            let valve_index = if valve.flow_rate > 0 || valve_id.as_str() == starting_valve_id {
+                let index = graph.add_node(Valve(valve_id.clone()));
+                Some(index)
+            } else {
+                None
+            };
 
             valve_indices.insert(
                 valve_id.clone(),
@@ -81,8 +95,10 @@ impl ValveMap {
                 .get(valve_id)
                 .ok_or_else(|| format!("Failed to get graph indices for valve ID '{valve_id}'"))?;
 
-            graph.add_edge(connector_index, valve_index, 1u32);
-            graph.add_edge(valve_index, connector_index, 0u32);
+            if let Some(valve_index) = valve_index {
+                graph.add_edge(connector_index, valve_index, 1u32);
+                graph.add_edge(valve_index, connector_index, 0u32);
+            }
 
             for connected_valve in &valve.connected_valves {
                 let &ValveIndices {
