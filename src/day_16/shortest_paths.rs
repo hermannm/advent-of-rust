@@ -17,17 +17,17 @@ enum ValveGraphNode {
 impl ValveMap {
     pub fn shortest_paths_between_valves(
         &self,
-        starting_valve_id: &str,
+        starting_valve_id: &String,
     ) -> Result<HashMap<String, HashMap<String, u32>>, String> {
         let graph = self.to_graph(starting_valve_id)?;
 
-        let result = floyd_warshall(&graph, |edge| *edge.weight()).map_err(|_| {
+        let shortest_paths_pairs = floyd_warshall(&graph, |edge| *edge.weight()).map_err(|_| {
             String::from("Failed to run Floyd-Warshall algorithm: Negative cycle detected")
         })?;
 
-        let mut shortest_paths = HashMap::<String, HashMap<String, u32>>::new();
+        let mut shortest_paths_map = HashMap::<String, HashMap<String, u32>>::new();
 
-        for (node_indices, shortest_path_length) in result {
+        for (node_indices, shortest_path_length) in shortest_paths_pairs {
             let nodes = (graph.index(node_indices.0), graph.index(node_indices.1));
 
             use ValveGraphNode::*;
@@ -37,13 +37,13 @@ impl ValveMap {
                     continue;
                 }
 
-                let valve_1_paths = shortest_paths
+                let valve_1_paths = shortest_paths_map
                     .entry(valve_1_id.clone())
                     .or_insert_with(HashMap::<String, u32>::new);
 
                 valve_1_paths.insert(valve_2_id.clone(), shortest_path_length);
 
-                let valve_2_paths = shortest_paths
+                let valve_2_paths = shortest_paths_map
                     .entry(valve_2_id.clone())
                     .or_insert_with(HashMap::<String, u32>::new);
 
@@ -51,12 +51,12 @@ impl ValveMap {
             }
         }
 
-        Ok(shortest_paths)
+        Ok(shortest_paths_map)
     }
 
     fn to_graph(
         &self,
-        starting_valve_id: &str,
+        starting_valve_id: &String,
     ) -> Result<Graph<ValveGraphNode, u32, Directed>, String> {
         use ValveGraphNode::*;
 
@@ -71,7 +71,7 @@ impl ValveMap {
         for (valve_id, valve) in &self.0 {
             let connector_index = graph.add_node(Connector(valve_id.clone()));
 
-            let valve_index = if valve.flow_rate > 0 || valve_id.as_str() == starting_valve_id {
+            let valve_index = if valve.flow_rate > 0 || valve_id == starting_valve_id {
                 let index = graph.add_node(Valve(valve_id.clone()));
                 Some(index)
             } else {

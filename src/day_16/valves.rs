@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 pub struct ValveMap(pub HashMap<String, Valve>);
 
@@ -11,30 +11,94 @@ impl ValveMap {
     pub fn release_maximum_pressure(
         &self,
         in_minutes: u32,
-        starting_valve_id: &str,
+        starting_valve_id: &String,
     ) -> Result<u32, String> {
         let shortest_paths_between_valves =
             self.shortest_paths_between_valves(starting_valve_id)?;
 
         self.find_releasable_pressure(
-            &String::from(starting_valve_id),
+            starting_valve_id,
             in_minutes,
             0u32,
             Vec::<&String>::new(),
+            &mut HashMap::<Vec<&String>, u32>::new(),
             &shortest_paths_between_valves,
         )
-        .ok_or_else(|| String::from("Failed to find releasable pressure from valves"))
     }
 
-    fn find_releasable_pressure(
+    pub fn release_maximum_pressure_with_elephant(
         &self,
-        current_valve_id: &String,
+        in_minutes: u32,
+        starting_valve_id: &String,
+    ) -> Result<u32, String> {
+        let mut opened_valves_pressure_map = HashMap::<Vec<&String>, u32>::new();
+
+        let shortest_paths_between_valves =
+            self.shortest_paths_between_valves(starting_valve_id)?;
+
+        self.find_releasable_pressure(
+            starting_valve_id,
+            in_minutes,
+            0u32,
+            Vec::<&String>::new(),
+            &mut opened_valves_pressure_map,
+            &shortest_paths_between_valves,
+        )?;
+
+        let mut opened_valves_pressure_vec = opened_valves_pressure_map
+            .into_iter()
+            .collect::<Vec<(Vec<&String>, u32)>>();
+
+        opened_valves_pressure_vec.sort_by(|(_, released_pressure_1), (_, released_pressure_2)| {
+            released_pressure_2.cmp(released_pressure_1)
+        });
+
+        let mut max_pressure = 0u32;
+
+        for (index_1, (opened_valves_1, released_pressure_1)) in
+            opened_valves_pressure_vec.iter().enumerate()
+        {
+            let opened_valves_set_1 = HashSet::<&&String>::from_iter(opened_valves_1.iter());
+
+            for (opened_valves_2, released_pressure_2) in
+                opened_valves_pressure_vec.iter().skip(index_1 + 1)
+            {
+                let pressure_sum = released_pressure_1 + released_pressure_2;
+
+                if pressure_sum <= max_pressure {
+                    break;
+                }
+
+                let opened_valves_set_2 = HashSet::<&&String>::from_iter(opened_valves_2.iter());
+
+                if opened_valves_set_1
+                    .intersection(&opened_valves_set_2)
+                    .count()
+                    == 0
+                    && pressure_sum > max_pressure
+                {
+                    max_pressure = pressure_sum;
+                }
+            }
+        }
+
+        Ok(max_pressure)
+    }
+
+    fn find_releasable_pressure<'a: 'b, 'b>(
+        &self,
+        current_valve_id: &'a String,
         minutes_left: u32,
         released_pressure: u32,
-        opened_valves: Vec<&String>,
-        shortest_paths_between_valves: &HashMap<String, HashMap<String, u32>>,
-    ) -> Option<u32> {
-        let paths_from_current_valve = shortest_paths_between_valves.get(current_valve_id)?;
+        opened_valves: Vec<&'b String>,
+        opened_valves_pressure_map: &mut HashMap<Vec<&'b String>, u32>,
+        shortest_paths_between_valves: &'a HashMap<String, HashMap<String, u32>>,
+    ) -> Result<u32, String> {
+        let paths_from_current_valve = shortest_paths_between_valves
+            .get(current_valve_id)
+            .ok_or_else(|| {
+                format!("Failed to find shortest paths for valve with ID '{current_valve_id}'")
+            })?;
 
         let other_valves_releasable_pressure = paths_from_current_valve
             .iter()
@@ -43,7 +107,11 @@ impl ValveMap {
                 let flow_rate = if opened_valves.contains(&valve_id) {
                     0u32
                 } else {
-                    let valve = self.0.get(valve_id)?;
+                    let valve = self
+                        .0
+                        .get(valve_id)
+                        .ok_or_else(|| format!("Failed to find valve with ID '{valve_id}'"))?;
+
                     valve.flow_rate
                 };
 
@@ -58,6 +126,7 @@ impl ValveMap {
                     new_minutes_left,
                     releasable_pressure,
                     new_opened_valves,
+                    opened_valves_pressure_map,
                     shortest_paths_between_valves,
                 )
             })
@@ -65,10 +134,12 @@ impl ValveMap {
 
         if let Some(other_valves_releasable_pressure) = other_valves_releasable_pressure {
             if other_valves_releasable_pressure > released_pressure {
-                return Some(other_valves_releasable_pressure);
+                return Ok(other_valves_releasable_pressure);
             }
         }
 
-        Some(released_pressure)
+        opened_valves_pressure_map.insert(opened_valves, released_pressure);
+
+        Ok(released_pressure)
     }
 }
