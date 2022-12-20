@@ -1,5 +1,3 @@
-use std::collections::HashSet;
-
 pub struct Blueprint {
     pub id: u32,
     pub ore_robot_cost: OreCost,
@@ -16,36 +14,36 @@ impl Blueprint {
     fn max_opened_geode_count(&self, minutes_to_open_geodes: u32) -> u32 {
         self.recursively_find_max_geodes(
             minutes_to_open_geodes,
-            Action::Wait,
-            Robot::starting_robots(),
-            Resources::new(),
+            &Resources::new(),
+            &Robot::starting_robots(),
         )
     }
 
     fn recursively_find_max_geodes(
         &self,
         minutes_left: u32,
-        action: Action,
-        mut robots: Vec<Robot>,
-        mut resources: Resources,
+        resources: &Resources,
+        robots: &[Robot],
     ) -> u32 {
         if minutes_left == 0 {
             return resources.geodes;
         }
 
-        resources.collect_from_robots(&robots);
-
-        action.execute(&mut robots, &mut resources);
-
         let mut max_geodes = 0u32;
 
-        for action in Action::all_available_actions(&resources, self) {
-            let max_geodes_after_action = self.recursively_find_max_geodes(
-                minutes_left - 1,
-                action,
-                robots.clone(),
-                resources.clone(),
-            );
+        for action in Action::actions_to_test(resources, self) {
+            let mut resources = resources.clone();
+            let mut robots = robots.to_vec();
+
+            resources.collect_from_robots(&robots);
+
+            if let Action::BuyRobot((robot, cost)) = action {
+                resources.pay_cost(&cost);
+                robots.push(robot);
+            }
+
+            let max_geodes_after_action =
+                self.recursively_find_max_geodes(minutes_left - 1, &resources, &robots);
 
             if max_geodes_after_action > max_geodes {
                 max_geodes = max_geodes_after_action;
@@ -93,71 +91,44 @@ enum Cost {
 }
 
 enum Action {
-    BuyRobots(Vec<(Robot, Cost)>),
+    BuyRobot((Robot, Cost)),
     Wait,
 }
 
 impl Action {
-    fn all_available_actions(resources: &Resources, blueprint: &Blueprint) -> Vec<Action> {
-        let mut first_robot_purchase_alternatives = HashSet::<Vec<(Robot, Cost)>>::new();
+    fn actions_to_test(resources: &Resources, blueprint: &Blueprint) -> Vec<Action> {
+        use Robot::*;
 
-        let (affordable_robots, can_buy_geode_cracker) =
-            Robot::all_affordable_or_geode_cracker(resources, blueprint);
-
-        for robot_with_cost in affordable_robots {
-            first_robot_purchase_alternatives.insert(vec![robot_with_cost]);
+        if let Some(buy_geode_cracker) = Action::try_buy_robot(GeodeCracker, resources, blueprint) {
+            return vec![buy_geode_cracker];
         }
 
-        let mut robot_purchase_alternatives = vec![first_robot_purchase_alternatives];
+        let mut actions = vec![Action::Wait];
 
-        loop {
-            let mut purchase_alternatives_to_add = HashSet::<Vec<(Robot, Cost)>>::new();
-
-            for purchase_alternative in robot_purchase_alternatives.last().unwrap() {
-                let mut resources_after_purchase = resources.clone();
-
-                for (_, cost) in purchase_alternative {
-                    resources_after_purchase = resources_after_purchase.with_cost_applied(cost);
-                }
-
-                for robot_with_cost in
-                    Robot::all_affordable_or_geode_cracker(&resources_after_purchase, blueprint).0
-                {
-                    let mut new_purchase_alternative = purchase_alternative.clone();
-                    new_purchase_alternative.push(robot_with_cost);
-                    purchase_alternatives_to_add.insert(new_purchase_alternative);
-                }
-            }
-
-            if purchase_alternatives_to_add.is_empty() {
-                break;
-            }
-
-            robot_purchase_alternatives.push(purchase_alternatives_to_add);
+        if let Some(buy_ore_collector) = Action::try_buy_robot(OreCollector, resources, blueprint) {
+            actions.push(buy_ore_collector);
         }
 
-        let mut actions = robot_purchase_alternatives
-            .iter()
-            .flat_map(|purchase_set| purchase_set.iter())
-            .map(|robot_purchases| Action::BuyRobots(robot_purchases.clone()))
-            .collect::<Vec<Action>>();
-
-        if !can_buy_geode_cracker {
-            actions.push(Action::Wait);
+        if let Some(buy_obsidian_collector) =
+            Action::try_buy_robot(ObsidianCollector, resources, blueprint)
+        {
+            actions.push(buy_obsidian_collector);
+        } else if let Some(buy_clay_collector) =
+            Action::try_buy_robot(ClayCollector, resources, blueprint)
+        {
+            actions.push(buy_clay_collector);
         }
 
         actions
     }
 
-    fn execute(self, robots: &mut Vec<Robot>, resources: &mut Resources) {
-        match self {
-            Action::Wait => {}
-            Action::BuyRobots(robots_with_cost) => {
-                for (robot, cost) in robots_with_cost {
-                    resources.pay_cost(&cost);
-                    robots.push(robot);
-                }
-            }
+    fn try_buy_robot(robot: Robot, resources: &Resources, blueprint: &Blueprint) -> Option<Action> {
+        let cost = blueprint.cost_of_robot(&robot);
+
+        if resources.can_afford(&cost) {
+            Some(Action::BuyRobot((robot, cost)))
+        } else {
+            None
         }
     }
 }
@@ -173,32 +144,6 @@ enum Robot {
 impl Robot {
     fn starting_robots() -> Vec<Robot> {
         vec![Robot::OreCollector]
-    }
-
-    /// Returns a list of all robots we can afford with the given resources and blueprint.
-    /// If we can afford geode cracker, returns only that, since we always want to buy that.
-    /// Also returns a boolean flag for whether we could afford the geode cracker.
-    fn all_affordable_or_geode_cracker(
-        resources: &Resources,
-        blueprint: &Blueprint,
-    ) -> (Vec<(Robot, Cost)>, bool) {
-        use Robot::*;
-
-        let mut affordable_robots = Vec::<(Robot, Cost)>::new();
-
-        for robot in [OreCollector, ClayCollector, ObsidianCollector, GeodeCracker] {
-            let cost = blueprint.cost_of_robot(&robot);
-
-            if resources.can_afford(&cost) {
-                if robot == GeodeCracker {
-                    return (vec![(robot, cost)], true);
-                }
-
-                affordable_robots.push((robot, cost));
-            }
-        }
-
-        (affordable_robots, false)
     }
 }
 
@@ -220,7 +165,7 @@ impl Resources {
         }
     }
 
-    fn collect_from_robots(&mut self, robots: &Vec<Robot>) {
+    fn collect_from_robots(&mut self, robots: &[Robot]) {
         use Robot::*;
 
         for robot in robots {
