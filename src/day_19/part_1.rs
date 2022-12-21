@@ -3,20 +3,16 @@ use rayon::prelude::{IntoParallelRefIterator, ParallelIterator};
 use super::blueprint::Blueprint;
 
 pub fn solve_puzzle(input: &str) -> Result<u32, String> {
-    let blueprints = Blueprint::blueprints_from_input(input)?;
+    let blueprints = input
+        .lines()
+        .map(Blueprint::try_from)
+        .collect::<Result<Vec<Blueprint>, String>>()?;
 
-    const MINUTES_TO_OPEN_GEODES: u32 = 24;
+    const MINUTES_TO_OPEN_GEODES: u16 = 24;
 
     let quality_level_sum = blueprints
         .par_iter()
-        .map(|blueprint| {
-            let quality_level = blueprint.quality_level(MINUTES_TO_OPEN_GEODES);
-            println!(
-                "Blueprint {} quality level: {}",
-                blueprint.id, quality_level
-            );
-            quality_level
-        })
+        .map(|blueprint| blueprint.quality_level(MINUTES_TO_OPEN_GEODES))
         .sum::<u32>();
 
     Ok(quality_level_sum)

@@ -1,14 +1,5 @@
 use super::blueprint::{Blueprint, OreAndClayCost, OreAndObsidianCost, OreCost};
 
-impl Blueprint {
-    pub fn blueprints_from_input(input: &str) -> Result<Vec<Blueprint>, String> {
-        input
-            .lines()
-            .map(Blueprint::try_from)
-            .collect::<Result<Vec<Blueprint>, String>>()
-    }
-}
-
 impl TryFrom<&str> for Blueprint {
     type Error = String;
 
@@ -40,10 +31,10 @@ impl TryFrom<&str> for Blueprint {
 
         Ok(Self {
             id,
-            ore_robot_cost,
-            clay_robot_cost,
-            obsidian_robot_cost,
-            geode_robot_cost,
+            ore_collector_cost: ore_robot_cost,
+            clay_collector_cost: clay_robot_cost,
+            obsidian_collector_cost: obsidian_robot_cost,
+            geode_cracker_cost: geode_robot_cost,
         })
     }
 }
@@ -111,13 +102,13 @@ impl TryFrom<&str> for OreAndObsidianCost {
     }
 }
 
-fn parse_number_string_with_suffix(string: &str, suffix: &str) -> Result<u32, String> {
+fn parse_number_string_with_suffix(string: &str, suffix: &str) -> Result<u16, String> {
     let (number_string, _) = string
         .split_once(suffix)
         .ok_or_else(|| format!("Expected to find '{suffix}' in string '{string}'"))?;
 
     let number = number_string
-        .parse::<u32>()
+        .parse::<u16>()
         .map_err(|_| format!("Failed to parse string '{number_string}' to integer"))?;
 
     Ok(number)
@@ -128,7 +119,7 @@ fn parse_two_number_strings_with_suffixes(
     suffix_1: &str,
     separator: &str,
     suffix_2: &str,
-) -> Result<(u32, u32), String> {
+) -> Result<(u16, u16), String> {
     let (suffixed_string_1, suffixed_string_2) = string
         .split_once(separator)
         .ok_or_else(|| format!("Expected to find '{separator}' in string '{string}'"))?;

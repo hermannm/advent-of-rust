@@ -1,234 +1,274 @@
 pub struct Blueprint {
     pub id: u32,
-    pub ore_robot_cost: OreCost,
-    pub clay_robot_cost: OreCost,
-    pub obsidian_robot_cost: OreAndClayCost,
-    pub geode_robot_cost: OreAndObsidianCost,
+    pub ore_collector_cost: OreCost,
+    pub clay_collector_cost: OreCost,
+    pub obsidian_collector_cost: OreAndClayCost,
+    pub geode_cracker_cost: OreAndObsidianCost,
+}
+
+pub struct OreCost {
+    pub ore: u16,
+}
+
+pub struct OreAndClayCost {
+    pub ore: u16,
+    pub clay: u16,
+}
+
+pub struct OreAndObsidianCost {
+    pub ore: u16,
+    pub obsidian: u16,
 }
 
 impl Blueprint {
-    pub fn quality_level(&self, minutes_to_open_geodes: u32) -> u32 {
-        self.id * self.max_opened_geode_count(minutes_to_open_geodes)
+    pub fn quality_level(&self, minutes_to_open_geodes: u16) -> u32 {
+        self.id * u32::from(self.max_geodes(minutes_to_open_geodes))
     }
 
-    fn max_opened_geode_count(&self, minutes_to_open_geodes: u32) -> u32 {
-        self.recursively_find_max_geodes(
-            minutes_to_open_geodes,
-            &Resources::new(),
-            &Robot::starting_robots(),
-        )
-    }
-
-    fn recursively_find_max_geodes(
-        &self,
-        minutes_left: u32,
-        resources: &Resources,
-        robots: &[Robot],
-    ) -> u32 {
-        if minutes_left == 0 {
-            return resources.geodes;
-        }
-
-        let mut max_geodes = 0u32;
-
-        for action in Action::actions_to_test(resources, self) {
-            let mut resources = resources.clone();
-            let mut robots = robots.to_vec();
-
-            resources.collect_from_robots(&robots);
-
-            if let Action::BuyRobot((robot, cost)) = action {
-                resources.pay_cost(&cost);
-                robots.push(robot);
-            }
-
-            let max_geodes_after_action =
-                self.recursively_find_max_geodes(minutes_left - 1, &resources, &robots);
-
-            if max_geodes_after_action > max_geodes {
-                max_geodes = max_geodes_after_action;
-            }
-        }
-
-        max_geodes
-    }
-
-    fn cost_of_robot(&self, robot: &Robot) -> Cost {
-        use Cost::*;
-        use Robot::*;
-
-        match robot {
-            OreCollector => Ore(self.ore_robot_cost.clone()),
-            ClayCollector => Ore(self.clay_robot_cost.clone()),
-            ObsidianCollector => OreAndClay(self.obsidian_robot_cost.clone()),
-            GeodeCracker => OreAndObsidian(self.geode_robot_cost.clone()),
-        }
-    }
-}
-
-#[derive(PartialEq, Eq, Hash, Clone)]
-pub struct OreCost {
-    pub ore: u32,
-}
-
-#[derive(PartialEq, Eq, Hash, Clone)]
-pub struct OreAndClayCost {
-    pub ore: u32,
-    pub clay: u32,
-}
-
-#[derive(PartialEq, Eq, Hash, Clone)]
-pub struct OreAndObsidianCost {
-    pub ore: u32,
-    pub obsidian: u32,
-}
-
-#[derive(PartialEq, Eq, Hash, Clone)]
-enum Cost {
-    Ore(OreCost),
-    OreAndClay(OreAndClayCost),
-    OreAndObsidian(OreAndObsidianCost),
-}
-
-enum Action {
-    BuyRobot((Robot, Cost)),
-    Wait,
-}
-
-impl Action {
-    fn actions_to_test(resources: &Resources, blueprint: &Blueprint) -> Vec<Action> {
-        use Robot::*;
-
-        if let Some(buy_geode_cracker) = Action::try_buy_robot(GeodeCracker, resources, blueprint) {
-            return vec![buy_geode_cracker];
-        }
-
-        let mut actions = vec![Action::Wait];
-
-        if let Some(buy_ore_collector) = Action::try_buy_robot(OreCollector, resources, blueprint) {
-            actions.push(buy_ore_collector);
-        }
-
-        if let Some(buy_obsidian_collector) =
-            Action::try_buy_robot(ObsidianCollector, resources, blueprint)
-        {
-            actions.push(buy_obsidian_collector);
-        } else if let Some(buy_clay_collector) =
-            Action::try_buy_robot(ClayCollector, resources, blueprint)
-        {
-            actions.push(buy_clay_collector);
-        }
-
-        actions
-    }
-
-    fn try_buy_robot(robot: Robot, resources: &Resources, blueprint: &Blueprint) -> Option<Action> {
-        let cost = blueprint.cost_of_robot(&robot);
-
-        if resources.can_afford(&cost) {
-            Some(Action::BuyRobot((robot, cost)))
-        } else {
-            None
-        }
-    }
-}
-
-#[derive(PartialEq, Eq, Hash, Clone)]
-enum Robot {
-    OreCollector,
-    ClayCollector,
-    ObsidianCollector,
-    GeodeCracker,
-}
-
-impl Robot {
-    fn starting_robots() -> Vec<Robot> {
-        vec![Robot::OreCollector]
+    pub fn max_geodes(&self, minutes_to_open_geodes: u16) -> u16 {
+        SearchState::new(minutes_to_open_geodes).recursively_find_max_geodes(self)
     }
 }
 
 #[derive(Clone)]
+struct SearchState {
+    minutes_left: u16,
+    resources: Resources,
+    robots: Robots,
+    robots_skipped: RobotsSkipped,
+}
+
+impl SearchState {
+    fn new(minutes_to_open_geodes: u16) -> SearchState {
+        SearchState {
+            minutes_left: minutes_to_open_geodes,
+            resources: Resources::default(),
+            robots: Robots::default(),
+            robots_skipped: RobotsSkipped::default(),
+        }
+    }
+
+    fn recursively_find_max_geodes(&self, blueprint: &Blueprint) -> u16 {
+        if self.minutes_left == 0 {
+            return self.resources.geodes;
+        }
+
+        self.next_states(blueprint)
+            .iter()
+            .map(|next_state| next_state.recursively_find_max_geodes(blueprint))
+            .max()
+            .unwrap_or(0)
+    }
+
+    fn next_states(&self, blueprint: &Blueprint) -> Vec<SearchState> {
+        let mut states = Vec::<SearchState>::new();
+        let mut robots_skipped_if_waiting = self.robots_skipped.clone();
+
+        if let Some(geode_cracker_state) = self.try_buy_geode_cracker(blueprint) {
+            states.push(geode_cracker_state);
+            robots_skipped_if_waiting.geode_cracker |= true;
+        }
+
+        if let Some(obsidian_collector_state) = self.try_buy_obsidian_collector(blueprint) {
+            states.push(obsidian_collector_state);
+            robots_skipped_if_waiting.obsidian_collector |= true;
+        }
+
+        if let Some(clay_collector_state) = self.try_buy_clay_collector(blueprint) {
+            states.push(clay_collector_state);
+            robots_skipped_if_waiting.clay_collector |= true;
+        }
+
+        if let Some(ore_collector_state) = self.try_buy_ore_collector(blueprint) {
+            states.push(ore_collector_state);
+            robots_skipped_if_waiting.ore_collector |= true;
+        }
+
+        if !robots_skipped_if_waiting.geode_cracker {
+            states.push(self.state_after_waiting(robots_skipped_if_waiting));
+        }
+
+        states
+    }
+
+    fn new_state_one_minute_later(&self) -> SearchState {
+        SearchState {
+            minutes_left: self.minutes_left - 1,
+            resources: self.resources.clone(),
+            robots: self.robots.clone(),
+            robots_skipped: RobotsSkipped::default(),
+        }
+    }
+
+    fn state_after_waiting(&self, robots_skipped: RobotsSkipped) -> SearchState {
+        let mut state = self.new_state_one_minute_later();
+        state.resources.collect_from_robots(&state.robots);
+        state.robots_skipped = robots_skipped;
+        state
+    }
+
+    fn try_buy_geode_cracker(&self, blueprint: &Blueprint) -> Option<SearchState> {
+        let new_ore = self
+            .resources
+            .ore
+            .checked_sub(blueprint.geode_cracker_cost.ore)?;
+
+        let new_obsidian = self
+            .resources
+            .obsidian
+            .checked_sub(blueprint.geode_cracker_cost.obsidian)?;
+
+        let mut state = self.new_state_one_minute_later();
+
+        state.resources.ore = new_ore;
+        state.resources.obsidian = new_obsidian;
+        state.resources.collect_from_robots(&state.robots);
+
+        state.robots.geode_crackers += 1;
+
+        Some(state)
+    }
+
+    fn try_buy_obsidian_collector(&self, blueprint: &Blueprint) -> Option<SearchState> {
+        if self.robots_skipped.obsidian_collector
+            || self.should_skip_robot(
+                self.robots.obsidian_collectors,
+                self.resources.obsidian,
+                blueprint.geode_cracker_cost.obsidian,
+            )
+        {
+            return None;
+        }
+
+        let new_ore = self
+            .resources
+            .ore
+            .checked_sub(blueprint.obsidian_collector_cost.ore)?;
+
+        let new_clay = self
+            .resources
+            .clay
+            .checked_sub(blueprint.obsidian_collector_cost.clay)?;
+
+        let mut state = self.new_state_one_minute_later();
+
+        state.resources.ore = new_ore;
+        state.resources.clay = new_clay;
+        state.resources.collect_from_robots(&state.robots);
+
+        state.robots.obsidian_collectors += 1;
+
+        Some(state)
+    }
+
+    fn try_buy_clay_collector(&self, blueprint: &Blueprint) -> Option<SearchState> {
+        if self.robots_skipped.clay_collector
+            || self.should_skip_robot(
+                self.robots.clay_collectors,
+                self.resources.clay,
+                blueprint.obsidian_collector_cost.clay,
+            )
+        {
+            return None;
+        }
+
+        let new_ore = self
+            .resources
+            .ore
+            .checked_sub(blueprint.clay_collector_cost.ore)?;
+
+        let mut state = self.new_state_one_minute_later();
+
+        state.resources.ore = new_ore;
+        state.resources.collect_from_robots(&state.robots);
+
+        state.robots.clay_collectors += 1;
+
+        Some(state)
+    }
+
+    fn try_buy_ore_collector(&self, blueprint: &Blueprint) -> Option<SearchState> {
+        if self.robots_skipped.ore_collector
+            || self.should_skip_robot(
+                self.robots.ore_collectors,
+                self.resources.ore,
+                blueprint
+                    .ore_collector_cost
+                    .ore
+                    .max(blueprint.clay_collector_cost.ore)
+                    .max(blueprint.obsidian_collector_cost.ore)
+                    .max(blueprint.geode_cracker_cost.ore),
+            )
+        {
+            return None;
+        }
+
+        let new_ore = self
+            .resources
+            .ore
+            .checked_sub(blueprint.ore_collector_cost.ore)?;
+
+        let mut state = self.new_state_one_minute_later();
+
+        state.resources.ore = new_ore;
+        state.resources.collect_from_robots(&state.robots);
+
+        state.robots.ore_collectors += 1;
+
+        Some(state)
+    }
+
+    fn should_skip_robot(
+        &self,
+        robots_creating_resource: u16,
+        resource_in_storage: u16,
+        max_cost_of_resource: u16,
+    ) -> bool {
+        robots_creating_resource * self.minutes_left + resource_in_storage
+            >= max_cost_of_resource * self.minutes_left
+    }
+}
+
+#[derive(Default, Clone)]
 struct Resources {
-    ore: u32,
-    clay: u32,
-    obsidian: u32,
-    geodes: u32,
+    ore: u16,
+    clay: u16,
+    obsidian: u16,
+    geodes: u16,
 }
 
 impl Resources {
-    fn new() -> Self {
+    fn collect_from_robots(&mut self, robots: &Robots) {
+        self.ore += robots.ore_collectors;
+        self.clay += robots.clay_collectors;
+        self.obsidian += robots.obsidian_collectors;
+        self.geodes += robots.geode_crackers;
+    }
+}
+
+#[derive(Clone)]
+struct Robots {
+    ore_collectors: u16,
+    clay_collectors: u16,
+    obsidian_collectors: u16,
+    geode_crackers: u16,
+}
+
+impl Default for Robots {
+    fn default() -> Self {
         Self {
-            ore: 0,
-            clay: 0,
-            obsidian: 0,
-            geodes: 0,
+            ore_collectors: 1,
+            clay_collectors: 0,
+            obsidian_collectors: 0,
+            geode_crackers: 0,
         }
     }
+}
 
-    fn collect_from_robots(&mut self, robots: &[Robot]) {
-        use Robot::*;
-
-        for robot in robots {
-            match robot {
-                OreCollector => {
-                    self.ore += 1;
-                }
-                ClayCollector => {
-                    self.clay += 1;
-                }
-                ObsidianCollector => {
-                    self.obsidian += 1;
-                }
-                GeodeCracker => {
-                    self.geodes += 1;
-                }
-            }
-        }
-    }
-
-    fn can_afford(&self, cost: &Cost) -> bool {
-        use Cost::*;
-
-        match cost {
-            Ore(cost) => self.ore >= cost.ore,
-            OreAndClay(cost) => self.ore >= cost.ore && self.clay >= cost.clay,
-            OreAndObsidian(cost) => self.ore >= cost.ore && self.obsidian >= cost.obsidian,
-        }
-    }
-
-    fn with_cost_applied(&self, cost: &Cost) -> Resources {
-        let &Resources {
-            ore,
-            clay,
-            obsidian,
-            geodes,
-        } = self;
-
-        use Cost::*;
-
-        match cost {
-            Ore(cost) => Resources {
-                ore: ore - cost.ore,
-                clay,
-                obsidian,
-                geodes,
-            },
-            OreAndClay(cost) => Resources {
-                ore: ore - cost.ore,
-                clay: clay - cost.clay,
-                obsidian,
-                geodes,
-            },
-            OreAndObsidian(cost) => Resources {
-                ore: ore - cost.ore,
-                clay,
-                obsidian: obsidian - cost.obsidian,
-                geodes,
-            },
-        }
-    }
-
-    fn pay_cost(&mut self, cost: &Cost) {
-        *self = self.with_cost_applied(cost);
-    }
+#[derive(Default, Clone)]
+struct RobotsSkipped {
+    ore_collector: bool,
+    clay_collector: bool,
+    obsidian_collector: bool,
+    geode_cracker: bool,
 }
