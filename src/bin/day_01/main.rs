@@ -1,7 +1,7 @@
 use advent_of_rust::day_01::{part_1, part_2};
 
 fn main() -> Result<(), String> {
-    let input = include_str!("input.txt");
+    let input = include_str!("input.txt").trim();
 
     println!("Solutions to Advent of Code 2022, day 1");
 
