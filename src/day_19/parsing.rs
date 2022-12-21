@@ -1,4 +1,10 @@
-use super::blueprint::{Blueprint, OreAndClayCost, OreAndObsidianCost, OreCost};
+use std::collections::HashMap;
+
+use super::{
+    blueprint::{Blueprint, Cost},
+    resources::Resource,
+    robots::{Robot, NUMBER_OF_ROBOTS},
+};
 
 impl TryFrom<&str> for Blueprint {
     type Error = String;
@@ -24,26 +30,25 @@ impl TryFrom<&str> for Blueprint {
             ));
         }
 
-        let ore_robot_cost = OreCost::try_from(cost_strings[0])?;
-        let clay_robot_cost = OreCost::try_from(cost_strings[1])?;
-        let obsidian_robot_cost = OreAndClayCost::try_from(cost_strings[2])?;
-        let geode_robot_cost = OreAndObsidianCost::try_from(cost_strings[3])?;
+        let ore_collector_cost = ore_cost_from_string(cost_strings[0])?;
+        let clay_collector_cost = ore_cost_from_string(cost_strings[1])?;
+        let obsidian_collector_cost = ore_and_clay_cost_from_string(cost_strings[2])?;
+        let geode_cracker_cost = ore_and_obsidian_cost_from_string(cost_strings[3])?;
 
-        Ok(Self {
-            id,
-            ore_collector_cost: ore_robot_cost,
-            clay_collector_cost: clay_robot_cost,
-            obsidian_collector_cost: obsidian_robot_cost,
-            geode_cracker_cost: geode_robot_cost,
-        })
+        use Robot::*;
+
+        let mut robot_costs = HashMap::<Robot, Cost>::with_capacity(NUMBER_OF_ROBOTS);
+        robot_costs.insert(OreCollector, ore_collector_cost);
+        robot_costs.insert(ClayCollector, clay_collector_cost);
+        robot_costs.insert(ObsidianCollector, obsidian_collector_cost);
+        robot_costs.insert(GeodeCracker, geode_cracker_cost);
+
+        Ok(Self { id, robot_costs })
     }
 }
 
-impl TryFrom<&str> for OreCost {
-    type Error = String;
-
-    fn try_from(cost_string: &str) -> Result<Self, Self::Error> {
-        let (_, ore_cost_string) = cost_string
+fn ore_cost_from_string(cost_string: &str) -> Result<Cost, String> {
+    let (_, ore_cost_string) = cost_string
             .split_once("Each ore robot costs ")
             .or_else(|| cost_string.split_once("Each clay robot costs "))
             .ok_or_else(|| {
@@ -52,54 +57,50 @@ impl TryFrom<&str> for OreCost {
                 )
             })?;
 
-        let ore = parse_number_string_with_suffix(ore_cost_string, " ore")?;
+    let ore = parse_number_string_with_suffix(ore_cost_string, " ore")?;
 
-        Ok(Self { ore })
-    }
+    let mut cost = Cost::with_capacity(1);
+    cost.insert(Resource::Ore, ore);
+
+    Ok(cost)
 }
 
-impl TryFrom<&str> for OreAndClayCost {
-    type Error = String;
+fn ore_and_clay_cost_from_string(cost_string: &str) -> Result<Cost, String> {
+    let (_, ore_and_clay_cost_string) = cost_string
+        .split_once("Each obsidian robot costs ")
+        .ok_or_else(|| {
+            format!("Expected to find 'Each obsidian robot costs' in cost string '{cost_string}'")
+        })?;
 
-    fn try_from(cost_string: &str) -> Result<Self, Self::Error> {
-        let (_, ore_and_clay_cost_string) = cost_string
-            .split_once("Each obsidian robot costs ")
-            .ok_or_else(|| {
-                format!(
-                    "Expected to find 'Each obsidian robot costs' in cost string '{cost_string}'"
-                )
-            })?;
+    let (ore, clay) =
+        parse_two_number_strings_with_suffixes(ore_and_clay_cost_string, " ore", " and ", " clay")?;
 
-        let (ore, clay) = parse_two_number_strings_with_suffixes(
-            ore_and_clay_cost_string,
-            " ore",
-            " and ",
-            " clay",
-        )?;
+    let mut cost = Cost::with_capacity(2);
+    cost.insert(Resource::Ore, ore);
+    cost.insert(Resource::Clay, clay);
 
-        Ok(Self { ore, clay })
-    }
+    Ok(cost)
 }
 
-impl TryFrom<&str> for OreAndObsidianCost {
-    type Error = String;
-
-    fn try_from(cost_string: &str) -> Result<Self, Self::Error> {
-        let (_, ore_and_obsidian_cost_string) = cost_string
-            .split_once("Each geode robot costs ")
-            .ok_or_else(|| {
+fn ore_and_obsidian_cost_from_string(cost_string: &str) -> Result<Cost, String> {
+    let (_, ore_and_obsidian_cost_string) = cost_string
+        .split_once("Each geode robot costs ")
+        .ok_or_else(|| {
             format!("Expected to find 'Each geode robot costs' in cost string '{cost_string}'")
         })?;
 
-        let (ore, obsidian) = parse_two_number_strings_with_suffixes(
-            ore_and_obsidian_cost_string,
-            " ore",
-            " and ",
-            " obsidian",
-        )?;
+    let (ore, obsidian) = parse_two_number_strings_with_suffixes(
+        ore_and_obsidian_cost_string,
+        " ore",
+        " and ",
+        " obsidian",
+    )?;
 
-        Ok(Self { ore, obsidian })
-    }
+    let mut cost = Cost::with_capacity(2);
+    cost.insert(Resource::Ore, ore);
+    cost.insert(Resource::Obsidian, obsidian);
+
+    Ok(cost)
 }
 
 fn parse_number_string_with_suffix(string: &str, suffix: &str) -> Result<u16, String> {
