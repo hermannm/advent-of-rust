@@ -3,6 +3,9 @@ name = "advent-of-rust"
 version = "0.1.0"
 edition = "2021"
 
+[profile.test]
+opt-level = 3
+
 [dependencies]
 regex = "1.7.0"
 pathfinding = "4.0.0"
