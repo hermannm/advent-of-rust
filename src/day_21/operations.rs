@@ -1,33 +1,27 @@
-#[derive(Debug)]
 pub struct Operation {
     pub operator: Operator,
     pub operands: [Operand; 2],
 }
 
-#[derive(Debug)]
-pub enum Operand {
-    Variable,
-    Number(i64),
-    Nested(Box<Operation>),
-}
-
-#[derive(Debug)]
-pub enum Operator {
-    Add,
-    Subtract,
-    Multiply,
-    Divide,
-    Equals,
-}
-
-enum OperandValueResult {
+pub enum ValueResult {
     Value(i64),
     ContainsVariable,
 }
 
 impl Operation {
+    pub fn get_value(&self) -> ValueResult {
+        use ValueResult::*;
+
+        let [operand_1, operand_2] = &self.operands;
+
+        match (operand_1.get_value(), operand_2.get_value()) {
+            (Value(value_1), Value(value_2)) => Value(self.operator.apply(value_1, value_2)),
+            _ => ContainsVariable,
+        }
+    }
+
     pub fn calculate_variable(&self, operand_value_to_reach: Option<i64>) -> Result<i64, String> {
-        use OperandValueResult::*;
+        use ValueResult::*;
 
         let [operand_1, operand_2] = &self.operands;
 
@@ -64,20 +58,26 @@ impl Operation {
 
         Ok(variable_value)
     }
+}
 
-    fn get_value(&self) -> OperandValueResult {
-        use OperandValueResult::*;
-
-        let [operand_1, operand_2] = &self.operands;
-
-        match (operand_1.get_value(), operand_2.get_value()) {
-            (Value(value_1), Value(value_2)) => Value(self.operator.apply(value_1, value_2)),
-            _ => ContainsVariable,
-        }
-    }
+pub enum Operand {
+    Variable,
+    Number(i64),
+    Nested(Box<Operation>),
 }
 
 impl Operand {
+    fn get_value(&self) -> ValueResult {
+        use Operand::*;
+        use ValueResult::*;
+
+        match self {
+            Variable => ContainsVariable,
+            Number(number) => Value(*number),
+            Nested(operation) => operation.get_value(),
+        }
+    }
+
     fn calculate_variable(&self, operand_value_to_reach: i64) -> Result<i64, String> {
         use Operand::*;
 
@@ -93,17 +93,14 @@ impl Operand {
 
         Ok(value)
     }
+}
 
-    fn get_value(&self) -> OperandValueResult {
-        use Operand::*;
-        use OperandValueResult::*;
-
-        match self {
-            Variable => ContainsVariable,
-            Number(number) => Value(*number),
-            Nested(operation) => operation.get_value(),
-        }
-    }
+pub enum Operator {
+    Add,
+    Subtract,
+    Multiply,
+    Divide,
+    Equals,
 }
 
 impl Operator {

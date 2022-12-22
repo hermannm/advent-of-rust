@@ -1,12 +1,15 @@
 use std::collections::HashMap;
 
-use super::operation_tree::{Operand, Operation, Operator};
+use super::operations::{Operand, Operation, Operator};
 
 const ROOT_MONKEY_NAME: &str = "root";
-const VARIABLE_NAME: &str = "humn";
 
 impl Operation {
-    pub fn root_from_input(input: &str) -> Result<Self, String> {
+    pub fn root_from_input(
+        input: &str,
+        variable_name: Option<&str>,
+        replace_root_operation_with_equals: bool,
+    ) -> Result<Self, String> {
         let mut input_map = HashMap::<&str, &str>::new();
 
         for line in input.lines() {
@@ -21,9 +24,16 @@ impl Operation {
             return Err(format!("Failed to find monkey with name '{ROOT_MONKEY_NAME}' in input map"));
         };
 
-        let (operand_1, _, operand_2) = Operation::split_operation_string(root_operation)?;
+        let (operand_1, original_operator, operand_2) =
+            Operation::split_operation_string(root_operation)?;
 
-        Operation::new(operand_1, '=', operand_2, &input_map)
+        let operator = if replace_root_operation_with_equals {
+            '='
+        } else {
+            original_operator
+        };
+
+        Operation::new(operand_1, operator, operand_2, &input_map, variable_name)
     }
 
     fn new(
@@ -31,10 +41,11 @@ impl Operation {
         operator_character: char,
         operand_2: &str,
         input_map: &HashMap<&str, &str>,
+        variable_name: Option<&str>,
     ) -> Result<Self, String> {
-        let operand_1 = Operand::from_input_map(operand_1, input_map)?;
+        let operand_1 = Operand::from_input_map(operand_1, input_map, variable_name)?;
         let operator = Operator::try_from(operator_character)?;
-        let operand_2 = Operand::from_input_map(operand_2, input_map)?;
+        let operand_2 = Operand::from_input_map(operand_2, input_map, variable_name)?;
 
         Ok(Operation {
             operator,
@@ -64,12 +75,14 @@ impl Operand {
     fn from_input_map(
         operand_string: &str,
         input_map: &HashMap<&str, &str>,
+        variable_name: Option<&str>,
     ) -> Result<Self, String> {
         use Operand::*;
 
-        if operand_string == VARIABLE_NAME {
-            println!("{operand_string}");
-            return Ok(Variable);
+        if let Some(variable_name) = variable_name {
+            if operand_string == variable_name {
+                return Ok(Variable);
+            }
         }
 
         let Some(operand_value) = input_map.get(operand_string) else {
@@ -82,7 +95,8 @@ impl Operand {
                 let (operand_1, operator, operand_2) =
                     Operation::split_operation_string(operand_value)?;
 
-                let operation = Operation::new(operand_1, operator, operand_2, input_map)?;
+                let operation =
+                    Operation::new(operand_1, operator, operand_2, input_map, variable_name)?;
 
                 Nested(Box::new(operation))
             }
