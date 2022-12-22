@@ -13,16 +13,16 @@ impl Operation {
         let mut input_map = HashMap::<&str, &str>::new();
 
         for line in input.lines() {
-            let Some((monkey_name, operation_string)) = line.split_once(": ") else {
-                return Err(format!("Expected to find ':' in input line '{line}'"));
-            };
+            let (monkey_name, operation_string) = line
+                .split_once(": ")
+                .ok_or_else(|| format!("Expected to find ':' in input line '{line}'"))?;
 
             input_map.insert(monkey_name, operation_string);
         }
 
-        let Some(root_operation) = input_map.get(ROOT_MONKEY_NAME) else {
-            return Err(format!("Failed to find monkey with name '{ROOT_MONKEY_NAME}' in input map"));
-        };
+        let root_operation = input_map.get(ROOT_MONKEY_NAME).ok_or_else(|| {
+            format!("Failed to find monkey with name '{ROOT_MONKEY_NAME}' in input map")
+        })?;
 
         let (operand_1, original_operator, operand_2) =
             Operation::split_operation_string(root_operation)?;
@@ -61,11 +61,12 @@ impl Operation {
             ));
         }
 
-        let Some(operator_character) = operation_split[1].chars().next() else {
-            return Err(format!(
-                "Failed to get first character from string '{}'", operation_split[1]
-            ));
-        };
+        let operator_character = operation_split[1].chars().next().ok_or_else(|| {
+            format!(
+                "Failed to get first character from string '{}'",
+                operation_split[1]
+            )
+        })?;
 
         Ok((operation_split[0], operator_character, operation_split[2]))
     }
@@ -85,9 +86,9 @@ impl Operand {
             }
         }
 
-        let Some(operand_value) = input_map.get(operand_string) else {
-            return Err(format!("Failed to find operand '{operand_string}' in input map"));
-        };
+        let operand_value = input_map
+            .get(operand_string)
+            .ok_or_else(|| format!("Failed to find operand '{operand_string}' in input map"))?;
 
         let operand = match operand_value.parse::<i64>() {
             Ok(number) => Number(number),
