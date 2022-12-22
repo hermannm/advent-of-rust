@@ -1,4 +1,7 @@
-use super::monkeys::Monkeys;
+use self::monkeys::Monkeys;
+
+mod monkeys;
+mod parsing;
 
 pub fn solve_puzzle(input: &str) -> Result<i64, String> {
     let mut monkeys = Monkeys::try_from(input)?;

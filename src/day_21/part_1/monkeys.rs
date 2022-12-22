@@ -30,8 +30,6 @@ impl Monkeys {
     }
 
     fn shout_value(monkey_name: &String, value: i64, waiting_monkeys: &mut Vec<WaitingMonkey>) {
-        println!("{monkey_name}: {value}");
-
         let mut monkeys_to_shout = Vec::<(String, i64)>::new();
 
         for waiting_monkey in waiting_monkeys.iter_mut() {

@@ -11,5 +11,5 @@ fn part_1() {
 #[test]
 fn part_2() {
     let part2_result = part_2::solve_puzzle(INPUT.trim());
-    assert_eq!(part2_result, Ok(0))
+    assert_eq!(part2_result, Ok(301))
 }
