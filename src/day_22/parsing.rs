@@ -1,32 +1,51 @@
-use super::map::{Instruction, Map, Tile, Tiles};
+use super::{
+    map::{Map, Tile},
+    mover::Instruction,
+};
 
-pub fn tiles_and_instructions_from_input(input: &str) -> Result<(Tiles, Vec<Instruction>), String> {
+pub type TilesWithRowsAndColumns = (Vec<Vec<Option<Tile>>>, u32, u32);
+
+pub fn tiles_and_instructions_from_input(
+    input: &str,
+) -> Result<(TilesWithRowsAndColumns, Vec<Instruction>), String> {
     let (map_input, instructions_input) = input
         .split_once("\n\n")
         .ok_or_else(|| String::from("Expected to find double newline in input"))?;
 
-    let map = Map::tiles_from_input(map_input)?;
+    let tiles = Map::tiles_from_input(map_input)?;
     let instructions = Instruction::instructions_from_line(instructions_input)?;
 
-    Ok((map, instructions))
+    Ok((tiles, instructions))
 }
 
 impl Map {
-    fn tiles_from_input(input: &str) -> Result<Tiles, String> {
-        let mut tiles = Tiles::new();
+    fn tiles_from_input(input: &str) -> Result<TilesWithRowsAndColumns, String> {
+        let mut tiles = Vec::<Vec<Option<Tile>>>::new();
+
+        let mut rows: u32 = 0;
+        let mut columns: u32 = 0;
 
         for line in input.lines() {
+            rows += 1;
+
             let mut row = Vec::<Option<Tile>>::new();
+            let mut columns_in_this_row: u32 = 0;
 
             for character in line.chars() {
+                columns_in_this_row += 1;
+
                 let tile = Tile::from_character(character)?;
                 row.push(tile);
             }
 
             tiles.push(row);
+
+            if columns_in_this_row > columns {
+                columns = columns_in_this_row;
+            }
         }
 
-        Ok(tiles)
+        Ok((tiles, rows, columns))
     }
 }
 
@@ -56,7 +75,7 @@ impl Instruction {
 
         let get_forward_instruction = |number: &String| -> Result<Instruction, String> {
             let steps = number
-                .parse::<i32>()
+                .parse::<i64>()
                 .map_err(|_| format!("Failed to parse '{number}' to integer"))?;
 
             Ok(Forward { steps })
