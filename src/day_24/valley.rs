@@ -1,6 +1,6 @@
 use std::collections::HashSet;
 
-pub struct Valley {
+pub(super) struct Valley {
     pub expedition: Expedition,
     pub blizzards: Vec<Blizzard>,
     pub wall_positions: HashSet<Position>,
@@ -57,7 +57,7 @@ impl Valley {
     }
 }
 
-pub struct Expedition {
+pub(super) struct Expedition {
     pub start_position: Position,
     pub goal_position: Position,
 }
@@ -95,7 +95,7 @@ impl Expedition {
     }
 }
 
-pub struct Blizzard {
+pub(super) struct Blizzard {
     pub position: Position,
     pub direction: Direction,
 }
@@ -135,12 +135,12 @@ impl Blizzard {
 }
 
 #[derive(PartialEq, Eq, Hash, Clone)]
-pub struct Position {
+pub(super) struct Position {
     pub x: usize,
     pub y: usize,
 }
 
-pub enum Direction {
+pub(super) enum Direction {
     North,
     East,
     South,

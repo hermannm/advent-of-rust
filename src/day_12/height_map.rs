@@ -1,8 +1,8 @@
 use pathfinding::prelude::dijkstra;
 
-pub type Position = (usize, usize);
+pub(super) type Position = (usize, usize);
 
-pub struct HeightMap {
+pub(super) struct HeightMap {
     pub heights: Vec<Vec<usize>>,
 
     pub rows: usize,

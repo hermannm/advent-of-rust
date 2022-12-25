@@ -1,10 +1,10 @@
-pub struct Sensor {
+pub(super) struct Sensor {
     pub position: Position,
     pub beacon_position: Position,
     pub detection_distance: i32,
 }
 
-pub struct SensorMap {
+pub(super) struct SensorMap {
     pub sensors: Vec<Sensor>,
 }
 
@@ -89,7 +89,7 @@ impl SensorMap {
 }
 
 #[derive(PartialEq, Eq)]
-pub struct Position {
+pub(super) struct Position {
     pub x: i32,
     pub y: i32,
 }

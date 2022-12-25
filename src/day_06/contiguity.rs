@@ -1,4 +1,4 @@
-pub fn end_index_of_contiguous_different_characters(
+pub(super) fn end_index_of_contiguous_different_characters(
     input: &str,
     number_of_different_characters: usize,
 ) -> Option<usize> {

@@ -1,6 +1,6 @@
 use super::falling_rocks::Movement;
 
-pub fn jet_pattern_from_input(input: &str) -> Result<Vec<Movement>, String> {
+pub(super) fn jet_pattern_from_input(input: &str) -> Result<Vec<Movement>, String> {
     input
         .chars()
         .map(Movement::try_from)

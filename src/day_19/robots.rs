@@ -1,9 +1,9 @@
 use std::collections::{hash_map::Iter, HashMap};
 
-pub const NUMBER_OF_ROBOTS: usize = 4;
+pub(super) const NUMBER_OF_ROBOTS: usize = 4;
 
 #[derive(Clone, PartialEq, Eq, Hash)]
-pub enum Robot {
+pub(super) enum Robot {
     OreCollector,
     ClayCollector,
     ObsidianCollector,
@@ -11,7 +11,7 @@ pub enum Robot {
 }
 
 #[derive(Clone)]
-pub struct Robots {
+pub(super) struct Robots {
     map: HashMap<Robot, u16>,
 }
 

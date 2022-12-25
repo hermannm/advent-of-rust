@@ -4,7 +4,7 @@ use crate::day_22::position_and_direction::{Direction, Position};
 
 use super::{corners::Corner, AdjacencyMap};
 
-pub struct Edge {
+pub(super) struct Edge {
     from_corner: Corner,
     direction_from_corner: EdgeFromCorner,
     direction: Direction,
@@ -12,12 +12,12 @@ pub struct Edge {
     length: i64,
 }
 
-pub enum EdgeFromCorner {
+pub(super) enum EdgeFromCorner {
     Left,
     Right,
 }
 
-pub struct EdgeCorner {
+pub(super) struct EdgeCorner {
     pub corner_type: Corner,
     position: Position,
     is_on_edge: bool,

@@ -1,4 +1,4 @@
-pub enum GameChoice {
+pub(super) enum GameChoice {
     Rock,
     Paper,
     Scissors,
@@ -25,7 +25,7 @@ impl GameChoice {
     }
 }
 
-pub enum GameOutcome {
+pub(super) enum GameOutcome {
     Loss,
     Draw,
     Win,

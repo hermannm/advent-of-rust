@@ -2,7 +2,7 @@ use std::{cmp::Ordering, collections::HashSet};
 
 use super::movement::{Direction, Movement};
 
-pub struct Rope {
+pub(super) struct Rope {
     pub knots: Vec<Knot>,
 }
 
@@ -52,7 +52,7 @@ impl Rope {
     }
 }
 
-pub struct Knot {
+pub(super) struct Knot {
     pub position: Position,
     pub visited_positions: HashSet<Position>,
 }
@@ -117,7 +117,7 @@ impl Knot {
 }
 
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
-pub struct Position {
+pub(super) struct Position {
     x: i32,
     y: i32,
 }

@@ -2,12 +2,12 @@ use std::collections::HashMap;
 
 use super::{resources::Resource, robots::Robot, search_state::SearchState};
 
-pub struct Blueprint {
+pub(super) struct Blueprint {
     pub id: u32,
     pub robot_costs: HashMap<Robot, Cost>,
 }
 
-pub type Cost = HashMap<Resource, u16>;
+pub(super) type Cost = HashMap<Resource, u16>;
 
 impl Blueprint {
     pub fn quality_level(&self, minutes_to_open_geodes: u16) -> u32 {

@@ -1,4 +1,4 @@
-pub struct Forest {
+pub(super) struct Forest {
     pub trees: Vec<Vec<Tree>>,
     pub rows: usize,
     pub columns: usize,
@@ -62,7 +62,7 @@ impl Forest {
     }
 }
 
-pub struct Tree {
+pub(super) struct Tree {
     pub height: u32,
 }
 

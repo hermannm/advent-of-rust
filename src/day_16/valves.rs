@@ -1,8 +1,8 @@
 use std::collections::{HashMap, HashSet};
 
-pub struct ValveMap(pub HashMap<String, Valve>);
+pub(super) struct ValveMap(pub HashMap<String, Valve>);
 
-pub struct Valve {
+pub(super) struct Valve {
     pub flow_rate: u32,
     pub connected_valves: Vec<String>,
 }

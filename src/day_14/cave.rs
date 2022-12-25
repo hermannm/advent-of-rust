@@ -1,6 +1,6 @@
 use std::collections::HashSet;
 
-pub struct Cave {
+pub(super) struct Cave {
     pub rocks: HashSet<Position>,
     pub lowest_rock: i32,
     pub has_floor: bool,
@@ -39,7 +39,7 @@ impl Cave {
 }
 
 #[derive(Clone, PartialEq, Eq, Hash, Debug)]
-pub struct Position {
+pub(super) struct Position {
     pub x: i32,
     pub y: i32,
 }

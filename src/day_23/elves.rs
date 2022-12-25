@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-pub struct Elves(pub Vec<Elf>);
+pub(super) struct Elves(pub Vec<Elf>);
 
 impl Elves {
     pub fn move_to_open_ground(&mut self, rounds: u32) {
@@ -111,7 +111,7 @@ impl Elves {
 }
 
 #[derive(PartialEq, Eq, Hash, Clone)]
-pub struct Elf {
+pub(super) struct Elf {
     position: Position,
 }
 
@@ -143,7 +143,7 @@ impl Elf {
 }
 
 #[derive(PartialEq, Eq, Hash, Clone, Copy)]
-pub struct Position {
+pub(super) struct Position {
     x: i64,
     y: i64,
 }
@@ -182,7 +182,7 @@ struct PositionCheck<'a> {
 }
 
 impl AdjacentPositions {
-    pub fn position_checks_in_order(&self, round: u32) -> [PositionCheck; 5] {
+    fn position_checks_in_order(&self, round: u32) -> [PositionCheck; 5] {
         let all = self.all_check();
         let north = self.north_check();
         let south = self.south_check();

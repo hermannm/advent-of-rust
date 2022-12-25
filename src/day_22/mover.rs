@@ -3,13 +3,13 @@ use super::{
     position_and_direction::{Direction, Position},
 };
 
-pub enum Instruction {
+pub(super) enum Instruction {
     Forward { steps: i64 },
     Right,
     Left,
 }
 
-pub struct Mover {
+pub(super) struct Mover {
     position: Position,
     direction: Direction,
 }

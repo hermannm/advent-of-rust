@@ -1,6 +1,6 @@
 use super::instruction::Instruction;
 
-pub struct Register {
+pub(super) struct Register {
     pub value: i64,
     cycles_completed: u32,
 }

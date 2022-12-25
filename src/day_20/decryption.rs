@@ -1,4 +1,4 @@
-pub struct EncryptedFile {
+pub(super) struct EncryptedFile {
     pub number_sequence: Vec<i64>,
 }
 

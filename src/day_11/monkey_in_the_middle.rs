@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-pub fn play_monkey_in_the_middle(
+pub(super) fn play_monkey_in_the_middle(
     monkeys: &mut Vec<Monkey>,
     until_round: u32,
     relief_after_inspection: bool,
@@ -48,7 +48,7 @@ pub fn play_monkey_in_the_middle(
     Ok(())
 }
 
-pub struct Monkey {
+pub(super) struct Monkey {
     pub id: i32,
     pub items: Vec<Item>,
     pub operation: WorryLevelOperation,
@@ -94,17 +94,17 @@ impl Monkey {
     }
 }
 
-pub struct Item {
+pub(super) struct Item {
     pub worry_level: u64,
 }
 
-pub enum WorryLevelOperation {
+pub(super) enum WorryLevelOperation {
     Add(u64),
     MultiplyWith(u64),
     MultiplyWithSelf,
 }
 
-pub struct WorryLevelTest {
+pub(super) struct WorryLevelTest {
     pub divisible_by: u64,
     pub target_monkey_if_true: i32,
     pub target_monkey_if_false: i32,

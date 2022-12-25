@@ -1,9 +1,9 @@
-pub struct Operation {
+pub(super) struct Operation {
     pub operator: Operator,
     pub operands: [Operand; 2],
 }
 
-pub enum ValueResult {
+pub(super) enum ValueResult {
     Value(i64),
     ContainsVariable,
 }
@@ -60,7 +60,7 @@ impl Operation {
     }
 }
 
-pub enum Operand {
+pub(super) enum Operand {
     Variable,
     Number(i64),
     Nested(Box<Operation>),
@@ -95,7 +95,7 @@ impl Operand {
     }
 }
 
-pub enum Operator {
+pub(super) enum Operator {
     Add,
     Subtract,
     Multiply,

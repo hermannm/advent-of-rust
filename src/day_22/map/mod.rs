@@ -10,7 +10,7 @@ use super::position_and_direction::{Direction, Position};
 mod corners;
 mod edges;
 
-pub struct Map {
+pub(super) struct Map {
     tiles: Vec<Vec<Option<Tile>>>,
     rows: u32,
     columns: u32,
@@ -18,12 +18,12 @@ pub struct Map {
 }
 
 #[derive(Clone)]
-pub enum Tile {
+pub(super) enum Tile {
     Open,
     Wall,
 }
 
-pub type AdjacencyMap = HashMap<(Position, Direction), (Position, Direction)>;
+pub(super) type AdjacencyMap = HashMap<(Position, Direction), (Position, Direction)>;
 
 impl Map {
     pub fn new(tiles: Vec<Vec<Option<Tile>>>, rows: u32, columns: u32) -> Self {

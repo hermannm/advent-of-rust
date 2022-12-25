@@ -1,4 +1,4 @@
-pub struct Movement {
+pub(super) struct Movement {
     pub direction: Direction,
     pub steps: u32,
 }
@@ -21,7 +21,7 @@ impl TryFrom<&str> for Movement {
     }
 }
 
-pub enum Direction {
+pub(super) enum Direction {
     Up,
     Down,
     Left,

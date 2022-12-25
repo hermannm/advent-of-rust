@@ -7,7 +7,7 @@ use super::{
 };
 
 #[derive(Clone)]
-pub struct SearchState {
+pub(super) struct SearchState {
     minutes_left: u16,
     resources: Resources,
     robots: Robots,

@@ -4,7 +4,7 @@ use regex::Regex;
 
 use super::arrangement::{CrateArrangement, MoveOperation};
 
-pub fn parse_input(input: &str) -> Result<(CrateArrangement, Vec<MoveOperation>), String> {
+pub(super) fn parse_input(input: &str) -> Result<(CrateArrangement, Vec<MoveOperation>), String> {
     let mut crate_arrangement_lines = Vec::<&str>::new();
     let mut move_operation_lines = Vec::<&str>::new();
 

@@ -1,12 +1,12 @@
 use std::cmp::Ordering;
 
-pub struct Pair {
+pub(super) struct Pair {
     pub left: Vec<IntegerOrList>,
     pub right: Vec<IntegerOrList>,
 }
 
 #[derive(PartialEq, Clone)]
-pub enum IntegerOrList {
+pub(super) enum IntegerOrList {
     Integer(i32),
     List(Vec<IntegerOrList>),
 }
@@ -20,13 +20,13 @@ impl Pair {
     }
 }
 
-pub enum Order {
+pub(super) enum Order {
     Right,
     Wrong,
     Indecisive,
 }
 
-pub trait CheckOrder {
+pub(super) trait CheckOrder {
     fn check_order(left: &Self, right: &Self) -> Order;
 }
 

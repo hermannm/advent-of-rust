@@ -1,6 +1,6 @@
 use super::{instruction::Instruction, register::Register};
 
-pub struct SpriteRenderer {
+pub(super) struct SpriteRenderer {
     sprite_position: Register,
     pixels: Vec<Vec<char>>,
 }

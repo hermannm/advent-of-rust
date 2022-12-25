@@ -1,5 +1,5 @@
 #[derive(Clone, PartialEq, Eq, Hash)]
-pub struct Position {
+pub(super) struct Position {
     pub row: i64,
     pub column: i64,
 }
@@ -30,7 +30,7 @@ impl Position {
 }
 
 #[derive(Clone, PartialEq, Eq, Hash, Debug)]
-pub enum Direction {
+pub(super) enum Direction {
     North,
     East,
     South,

@@ -6,7 +6,7 @@ use std::{
 
 use super::cache::Cache;
 
-pub struct Chamber {
+pub(super) struct Chamber {
     width: usize,
     fallen_rocks: Vec<Rock>,
 }
@@ -115,13 +115,13 @@ impl Chamber {
     }
 }
 
-pub enum Movement {
+pub(super) enum Movement {
     Left,
     Right,
     Down,
 }
 
-pub struct Rock {
+pub(super) struct Rock {
     shape: RockShape,
     position: Position,
 }
@@ -199,7 +199,7 @@ impl Rock {
 }
 
 #[derive(Clone)]
-pub struct RockShape {
+pub(super) struct RockShape {
     /// A 4x4 grid of booleans, where true == rock and false == air.
     /// If shape does not fill the whole grid, it starts from the top left [0, 0].
     grid: [[bool; 4]; 4],

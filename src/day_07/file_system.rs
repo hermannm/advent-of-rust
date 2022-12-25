@@ -1,11 +1,11 @@
-pub type Path = Vec<String>;
+pub(super) type Path = Vec<String>;
 
-pub enum FileSystemNode {
+pub(super) enum FileSystemNode {
     Directory(Directory),
     File(File),
 }
 
-pub struct Directory {
+pub(super) struct Directory {
     pub name: String,
     pub children: Vec<FileSystemNode>,
 }
@@ -43,7 +43,7 @@ impl Directory {
     }
 }
 
-pub struct File {
+pub(super) struct File {
     pub size: u64,
 }
 

@@ -1,5 +1,4 @@
-#[derive(Debug)]
-pub struct SnafuNumber {
+pub(super) struct SnafuNumber {
     pub digits_in_reverse_order: Vec<SnafuDigit>,
 }
 
@@ -69,8 +68,7 @@ impl ToString for SnafuNumber {
     }
 }
 
-#[derive(Debug)]
-pub enum SnafuDigit {
+pub(super) enum SnafuDigit {
     DoubleMinus,
     Minus,
     Zero,

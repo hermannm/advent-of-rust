@@ -13,7 +13,7 @@ impl TryFrom<(&str, &str)> for Pair {
     }
 }
 
-pub trait FromListString: Sized {
+pub(super) trait FromListString: Sized {
     fn from_list_string(list_string: &str) -> Result<Self, FromListStringError>;
 }
 
@@ -66,7 +66,7 @@ impl FromListString for Vec<IntegerOrList> {
     }
 }
 
-pub enum FromListStringError {
+pub(super) enum FromListStringError {
     NotListString,
     ParseError(String),
 }

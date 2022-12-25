@@ -1,6 +1,6 @@
 use super::file_system::{Directory, File, FileSystemNode, Path};
 
-pub enum InputLine<'a> {
+pub(super) enum InputLine<'a> {
     ListCommand,
     ChangeDirectoryCommand(ChangeDirectoryTarget<'a>),
     DirectoryName(&'a str),
@@ -54,7 +54,7 @@ impl<'a> TryFrom<&'a str> for InputLine<'a> {
     }
 }
 
-pub enum ChangeDirectoryTarget<'a> {
+pub(super) enum ChangeDirectoryTarget<'a> {
     Root,
     Parent,
     Target(&'a str),

@@ -1,13 +1,13 @@
-pub struct Droplet {
+pub(super) struct Droplet {
     pub cubes: Vec<Vec<Vec<Cube>>>,
 }
 
-pub enum Cube {
+pub(super) enum Cube {
     Lava,
     Air,
 }
 
-pub type Coordinates = [usize; 3];
+pub(super) type Coordinates = [usize; 3];
 
 impl Droplet {
     pub fn surface_area(&self, exterior_only: bool) -> usize {

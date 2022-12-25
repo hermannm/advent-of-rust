@@ -1,4 +1,4 @@
-pub struct Rucksack {
+pub(super) struct Rucksack {
     pub contents: Vec<Item>,
 }
 
@@ -43,9 +43,9 @@ impl TryFrom<&str> for Rucksack {
     }
 }
 
-pub type Item = char;
+pub(super) type Item = char;
 
-pub trait Priority {
+pub(super) trait Priority {
     fn get_priority(&self) -> Result<i32, String>;
 }
 

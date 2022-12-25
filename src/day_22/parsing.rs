@@ -3,9 +3,9 @@ use super::{
     mover::Instruction,
 };
 
-pub type TilesWithRowsAndColumns = (Vec<Vec<Option<Tile>>>, u32, u32);
+pub(super) type TilesWithRowsAndColumns = (Vec<Vec<Option<Tile>>>, u32, u32);
 
-pub fn tiles_and_instructions_from_input(
+pub(super) fn tiles_and_instructions_from_input(
     input: &str,
 ) -> Result<(TilesWithRowsAndColumns, Vec<Instruction>), String> {
     let (map_input, instructions_input) = input

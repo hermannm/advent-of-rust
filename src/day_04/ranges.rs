@@ -1,4 +1,4 @@
-pub struct Range {
+pub(super) struct Range {
     pub min: i32,
     pub max: i32,
 }
@@ -35,7 +35,7 @@ impl TryFrom<&str> for Range {
     }
 }
 
-pub struct RangePair {
+pub(super) struct RangePair {
     pub range_1: Range,
     pub range_2: Range,
 }

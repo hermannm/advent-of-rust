@@ -1,4 +1,4 @@
-pub enum Instruction {
+pub(super) enum Instruction {
     Addx(i64),
     Noop,
 }

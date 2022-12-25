@@ -6,7 +6,7 @@ use std::{
 
 use super::falling_rocks::{Chamber, Movement, RockShape};
 
-pub struct Cache {
+pub(super) struct Cache {
     entries: HashMap<CacheKey, CacheValue>,
     computed_height: Option<usize>,
 }

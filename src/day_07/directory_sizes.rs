@@ -2,7 +2,7 @@ use std::slice::Iter;
 
 use super::file_system::{Directory, FileSystemNode};
 
-pub struct DirectorySizes {
+pub(super) struct DirectorySizes {
     pub root_size: u64,
     sizes: Vec<u64>,
 }

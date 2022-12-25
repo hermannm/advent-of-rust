@@ -5,7 +5,7 @@ use crate::day_22::position_and_direction::Position;
 use super::Map;
 
 #[derive(Clone)]
-pub enum Corner {
+pub(super) enum Corner {
     InnerTopLeft,
     InnerTopRight,
     InnerBottomRight,

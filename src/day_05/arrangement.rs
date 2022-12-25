@@ -1,12 +1,12 @@
 use std::collections::HashMap;
 
-pub struct MoveOperation {
+pub(super) struct MoveOperation {
     pub crates_to_move: i32,
     pub from_stack: i32,
     pub to_stack: i32,
 }
 
-pub struct CrateArrangement {
+pub(super) struct CrateArrangement {
     pub stacks: HashMap<i32, Vec<char>>,
 }
 

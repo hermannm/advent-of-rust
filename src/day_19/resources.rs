@@ -6,7 +6,7 @@ use super::{
 };
 
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
-pub enum Resource {
+pub(super) enum Resource {
     Ore,
     Clay,
     Obsidian,
@@ -14,7 +14,7 @@ pub enum Resource {
 }
 
 #[derive(Clone)]
-pub struct Resources {
+pub(super) struct Resources {
     map: HashMap<Resource, u16>,
 }
 
